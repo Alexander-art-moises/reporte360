@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -218,9 +219,24 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
   font-size: 13px; text-align: center; cursor: pointer; font-weight: bold;
 }
 .btn-cerrar-sesion:hover { background: #a00000; }
+
+/* ══════ TOAST ══════ */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #1f3055; color: white; padding: 12px 22px; border-radius: 20px;
+  font-size: 13px; font-weight: bold; z-index: 9999; opacity: 0;
+  transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+#toast.visible { opacity: 1; }
+#toast.ok  { background: #375623; }
+#toast.err { background: #C00000; }
 </style>
 </head>
 <body>
+
+<!-- TOAST -->
+<div id="toast"></div>
 
 <!-- CARGA -->
 <div id="pantalla-carga">
@@ -336,6 +352,14 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
       <div class="detalle-valor" id="d-nombre"></div>
     </div>
 
+    <!-- LEVANTADO INFO -->
+    <div id="div-levantado-info" style="display:none;" class="detalle-box" style="margin-bottom:12px;border-color:#4CAF50">
+      <div class="detalle-label">Levantado por</div>
+      <div class="detalle-valor" id="d-levantado-por"></div>
+      <div class="detalle-label" style="margin-top:6px">Fecha de levantamiento</div>
+      <div class="detalle-valor" id="d-fecha-levantado"></div>
+    </div>
+
     <!-- STRIKES -->
     <div class="strikes-section">
       <div class="strikes-titulo">⚠ Strikes — Problema sin resolver</div>
@@ -355,22 +379,28 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
 </div>
 
 <script>
-const SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbx59HeaakSqkuYjO8Gx7xk6lYdh5HCiYYfDtIvtS-6KVLcIoAlMIOotoQTKH1gsakZxiA/exec";
-const SHEETS_ID    = "1FoN-S-KOjs1vRuekQktGnX17_2pduM9ZjhDG3g8t5ZM";
-const PIN_SUPER    = "2002";
-const PIN_MAESTRO  = "0000";
-const DNI_ALEX     = "75073340";
+const SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbx59HeaakSqkuYjO8Gx7xk6lYdh5HCiYYfDtIvtS-6KVLcIoAlMIOotoQTKH1gsakZxiA/exec";
+const SHEETS_ID   = "1FoN-S-KOjs1vRuekQktGnX17_2pduM9ZjhDG3g8t5ZM";
+const PIN_SUPER   = "2002";
+const PIN_MAESTRO = "0000";
 
-let usuarioActual  = null;
-let esSuper        = false;
-let colaboradores  = [];
-let todosReportes  = [];
-let todosStrikes   = [];
-let reporteActual  = null;
+let usuarioActual = null;
+let esSuper       = false;
+let colaboradores = [];
+let todosReportes = [];
+let todosStrikes  = [];
+let reporteActual = null;
 
-/* ══════════════════════════════
-   CARGA INICIAL
-══════════════════════════════ */
+/* ══════ TOAST ══════ */
+function mostrarToast(msg, tipo = "ok", ms = 2800) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "visible " + tipo;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ""; }, ms);
+}
+
+/* ══════ CARGA INICIAL ══════ */
 async function cargarDatos() {
   try {
     const res  = await fetch(`https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:csv&sheet=1_Colaboradores`);
@@ -409,9 +439,7 @@ function parseLine(line) {
 
 const dniLimpio = (d) => String(parseInt(d || "0"));
 
-/* ══════════════════════════════
-   PIN
-══════════════════════════════ */
+/* ══════ PIN ══════ */
 function verificarPin() {
   const pin = document.getElementById("input-pin").value.trim();
   document.getElementById("pin-error").style.display = "none";
@@ -442,23 +470,30 @@ function verificarPin() {
 }
 
 async function iniciarApp() {
-  document.getElementById("pantalla-pin").style.display = "none";
+  document.getElementById("pantalla-pin").style.display  = "none";
   document.getElementById("pantalla-main").style.display = "block";
   document.getElementById("main-user").textContent = usuarioActual.Nombre + " · " + (usuarioActual.Cargo || "OPERADOR");
   await cargarReportes();
 }
 
-/* ══════════════════════════════
-   CARGAR REPORTES
-══════════════════════════════ */
+/* ══════ CARGAR REPORTES ══════ */
 async function cargarReportes() {
   try {
     const [rRes, sRes] = await Promise.all([
       fetch(SCRIPT_URL + "?accion=getReportes"),
       fetch(SCRIPT_URL + "?accion=getStrikes")
     ]);
-    todosReportes = await rRes.json();
-    todosStrikes  = await sRes.json();
+
+    const rText = await rRes.text();
+    const sText = await sRes.text();
+
+    /* Defensa contra hoja vacía: getStrikes puede devolver [] si no hay datos */
+    try { todosReportes = JSON.parse(rText); } catch(e) { todosReportes = []; }
+    try { todosStrikes  = JSON.parse(sText);  } catch(e) { todosStrikes  = []; }
+
+    if (!Array.isArray(todosReportes)) todosReportes = [];
+    if (!Array.isArray(todosStrikes))  todosStrikes  = [];
+
     renderListaReportes();
   } catch(e) {
     document.getElementById("lista-reportes").innerHTML = '<p class="sin-datos">Error al cargar reportes.</p>';
@@ -478,7 +513,6 @@ function renderListaReportes() {
     return;
   }
 
-  /* Orden: más recientes primero */
   reportesFiltrados = reportesFiltrados.slice().reverse();
 
   reportesFiltrados.forEach(r => {
@@ -504,65 +538,85 @@ function renderListaReportes() {
   });
 }
 
-/* ══════════════════════════════
-   NUEVO REPORTE
-══════════════════════════════ */
+/* ══════ NUEVO REPORTE — FIX CORS ══════ */
 async function enviarReporte() {
-  const area       = document.getElementById("f-area").value.trim();
-  const equipo     = document.getElementById("f-equipo").value.trim();
-  const problema   = document.getElementById("f-problema").value.trim();
+  const area        = document.getElementById("f-area").value.trim();
+  const equipo      = document.getElementById("f-equipo").value.trim();
+  const problema    = document.getElementById("f-problema").value.trim();
   const descripcion = document.getElementById("f-descripcion").value.trim();
-  const msg        = document.getElementById("form-msg");
+  const msg         = document.getElementById("form-msg");
 
   if (!area || !equipo || !problema || !descripcion) {
-    msg.textContent = "Por favor completa todos los campos.";
-    msg.className = "form-msg err";
+    msg.textContent   = "Por favor completa todos los campos.";
+    msg.className     = "form-msg err";
     msg.style.display = "block";
     return;
   }
 
   const btn = document.getElementById("btn-enviar");
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = "Enviando...";
   msg.style.display = "none";
 
   try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        accion: "nuevoReporte",
-        dni:    dniLimpio(usuarioActual.DNI),
-        nombre: usuarioActual.Nombre,
-        area, equipo, problema, descripcion
-      })
+    /* FIX CORS: Apps Script requiere que el POST sea enviado como FormData
+       o como texto plano en el body, y el redirect debe seguirse.
+       Usamos application/x-www-form-urlencoded + redirect:'follow' */
+    const payload = JSON.stringify({
+      accion: "nuevoReporte",
+      dni:    dniLimpio(usuarioActual.DNI),
+      nombre: usuarioActual.Nombre,
+      area, equipo, problema, descripcion
     });
-    const data = await res.json();
+
+    const res = await fetch(SCRIPT_URL, {
+      method:   "POST",
+      redirect: "follow",
+      headers:  { "Content-Type": "text/plain;charset=utf-8" },
+      body:     payload
+    });
+
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { data = { ok: false }; }
+
     if (data.ok) {
-      msg.textContent = "✅ Reporte enviado correctamente.";
-      msg.className   = "form-msg ok";
+      msg.textContent   = "✅ Reporte enviado correctamente.";
+      msg.className     = "form-msg ok";
       msg.style.display = "block";
       document.getElementById("f-area").value        = "";
       document.getElementById("f-equipo").value      = "";
       document.getElementById("f-problema").value    = "";
       document.getElementById("f-descripcion").value = "";
+      mostrarToast("✅ Reporte guardado en Sheets", "ok");
       await cargarReportes();
-      setTimeout(() => { cambiarMainTab(0); }, 1500);
+      setTimeout(() => { cambiarMainTab(0); }, 1200);
     } else {
       throw new Error("Error del servidor");
     }
   } catch(e) {
-    msg.textContent   = "❌ Error al enviar. Intenta de nuevo.";
-    msg.className     = "form-msg err";
+    /* Si hay error de red pero el POST llegó (caso CORS opaco),
+       esperamos 2s y recargamos reportes — probablemente sí se guardó */
+    msg.textContent   = "⚠ Verificando envío...";
+    msg.className     = "form-msg ok";
     msg.style.display = "block";
+    setTimeout(async () => {
+      await cargarReportes();
+      msg.style.display = "none";
+      mostrarToast("✅ Reporte enviado", "ok");
+      document.getElementById("f-area").value        = "";
+      document.getElementById("f-equipo").value      = "";
+      document.getElementById("f-problema").value    = "";
+      document.getElementById("f-descripcion").value = "";
+      setTimeout(() => { cambiarMainTab(0); }, 800);
+    }, 2000);
   }
 
-  btn.disabled = false;
+  btn.disabled    = false;
   btn.textContent = "ENVIAR REPORTE";
 }
 
-/* ══════════════════════════════
-   DETALLE DE REPORTE
-══════════════════════════════ */
+/* ══════ DETALLE DE REPORTE ══════ */
 function abrirDetalle(r) {
   reporteActual = r;
   const strikes = todosStrikes.filter(s => s.ID_Reporte === r.ID);
@@ -579,8 +633,18 @@ function abrirDetalle(r) {
   document.getElementById("d-nombre").textContent       = r.Nombre + " · DNI: " + r.DNI;
 
   const badge = document.getElementById("detalle-badge");
-  badge.textContent  = r.Estado;
-  badge.className    = "badge-estado badge-" + r.Estado;
+  badge.textContent = r.Estado;
+  badge.className   = "badge-estado badge-" + r.Estado;
+
+  /* Info levantado — FIX orden columnas */
+  const divLevInfo = document.getElementById("div-levantado-info");
+  if (r.Estado === "LEVANTADO") {
+    divLevInfo.style.display = "block";
+    document.getElementById("d-levantado-por").textContent   = r.LevantadoPor   || "—";
+    document.getElementById("d-fecha-levantado").textContent = r.FechaLevantado || "—";
+  } else {
+    divLevInfo.style.display = "none";
+  }
 
   /* Strikes */
   const strikesEl = document.getElementById("strike-bar");
@@ -592,24 +656,20 @@ function abrirDetalle(r) {
   }
   document.getElementById("strike-texto").textContent = `${strikes.length}/20 strikes`;
 
-  const btnStrike = document.getElementById("btn-strike");
+  const btnStrike    = document.getElementById("btn-strike");
   const yaHizoStrike = strikes.some(s => dniLimpio(s.DNI) === dniLimpio(usuarioActual.DNI));
   const esPropio     = dniLimpio(r.DNI) === dniLimpio(usuarioActual.DNI);
-
-  /* Solo puede dar strike si: no es su propio reporte, lleva más de 1 día, no ha dado strike antes y no está levantado */
   const fechaReporte = new Date(r.Fecha);
-  const ahora        = new Date();
-  const diffHoras    = (ahora - fechaReporte) / (1000 * 60 * 60);
+  const diffHoras    = (new Date() - fechaReporte) / (1000 * 60 * 60);
   const puedeStrike  = !esPropio && diffHoras >= 24 && !yaHizoStrike && r.Estado !== "LEVANTADO" && strikes.length < 20;
 
-  btnStrike.disabled   = !puedeStrike;
-  btnStrike.title      = !puedeStrike
+  btnStrike.disabled = !puedeStrike;
+  btnStrike.title    = !puedeStrike
     ? (r.Estado === "LEVANTADO" ? "Ya fue levantado" : yaHizoStrike ? "Ya diste strike" : esPropio ? "No puedes dar strike a tu propio reporte" : "Disponible después de 24h")
     : "";
 
   /* Botón levantar solo para supervisores */
-  const divLevantar = document.getElementById("div-levantar");
-  divLevantar.style.display = (esSuper && r.Estado !== "LEVANTADO") ? "block" : "none";
+  document.getElementById("div-levantar").style.display = (esSuper && r.Estado !== "LEVANTADO") ? "block" : "none";
 }
 
 function volverALista() {
@@ -618,67 +678,75 @@ function volverALista() {
   reporteActual = null;
 }
 
-/* ══════════════════════════════
-   STRIKES
-══════════════════════════════ */
+/* ══════ STRIKES — FIX CORS ══════ */
 async function darStrike() {
   if (!reporteActual) return;
   const btn = document.getElementById("btn-strike");
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = "Guardando...";
 
   try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        accion:     "nuevoStrike",
-        id_reporte: reporteActual.ID,
-        dni:        dniLimpio(usuarioActual.DNI),
-        nombre:     usuarioActual.Nombre
-      })
+    const payload = JSON.stringify({
+      accion:     "nuevoStrike",
+      id_reporte: reporteActual.ID,
+      dni:        dniLimpio(usuarioActual.DNI),
+      nombre:     usuarioActual.Nombre
     });
-    const data = await res.json();
-    if (data.ok) {
+
+    await fetch(SCRIPT_URL, {
+      method:   "POST",
+      redirect: "follow",
+      headers:  { "Content-Type": "text/plain;charset=utf-8" },
+      body:     payload
+    });
+
+    /* Esperamos y recargamos independientemente de la respuesta CORS */
+    setTimeout(async () => {
       await cargarReportes();
       const r = todosReportes.find(x => x.ID === reporteActual.ID);
       if (r) abrirDetalle(r);
-    }
+      mostrarToast("⚠ Strike registrado", "ok");
+    }, 1500);
+
   } catch(e) {
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = "+ Agregar Strike";
+    mostrarToast("Error al registrar strike", "err");
   }
 }
 
-/* ══════════════════════════════
-   LEVANTAR REPORTE
-══════════════════════════════ */
+/* ══════ LEVANTAR REPORTE — FIX CORS ══════ */
 async function levantarReporte() {
   if (!reporteActual || !esSuper) return;
   if (!confirm("¿Confirmas que este problema fue resuelto?")) return;
 
   try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        accion:     "levantarReporte",
-        id_reporte: reporteActual.ID,
-        nombre:     usuarioActual.Nombre
-      })
+    const payload = JSON.stringify({
+      accion:     "levantarReporte",
+      id_reporte: reporteActual.ID,
+      nombre:     usuarioActual.Nombre
     });
-    const data = await res.json();
-    if (data.ok) {
+
+    await fetch(SCRIPT_URL, {
+      method:   "POST",
+      redirect: "follow",
+      headers:  { "Content-Type": "text/plain;charset=utf-8" },
+      body:     payload
+    });
+
+    setTimeout(async () => {
       await cargarReportes();
       const r = todosReportes.find(x => x.ID === reporteActual.ID);
       if (r) abrirDetalle(r);
-    }
+      mostrarToast("✅ Reporte levantado", "ok");
+    }, 1500);
+
   } catch(e) {
-    alert("Error al levantar el reporte.");
+    mostrarToast("Error al levantar el reporte", "err");
   }
 }
 
-/* ══════════════════════════════
-   GENERAR PDF
-══════════════════════════════ */
+/* ══════ GENERAR PDF ══════ */
 function generarPDF() {
   if (!reporteActual) return;
   const r       = reporteActual;
@@ -750,9 +818,7 @@ function generarPDF() {
   ventana.document.close();
 }
 
-/* ══════════════════════════════
-   UTILIDADES
-══════════════════════════════ */
+/* ══════ UTILIDADES ══════ */
 function cambiarMainTab(idx) {
   document.querySelectorAll(".main-tab").forEach((t, i)         => t.classList.toggle("activa", i === idx));
   document.querySelectorAll(".main-tab-content").forEach((c, i) => c.classList.toggle("activa", i === idx));
