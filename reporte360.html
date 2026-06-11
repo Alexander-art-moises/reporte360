@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte 360° · Planta Óxidos</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
+
+/* ══════ CARGA ══════ */
+#pantalla-carga {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: #1f3055; gap: 20px;
+}
+.spinner {
+  width: 48px; height: 48px;
+  border: 5px solid rgba(255,255,255,0.2);
+  border-top-color: #ff7300; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.carga-texto { color: rgba(255,255,255,0.7); font-size: 14px; }
+
+/* ══════ PIN ══════ */
+#pantalla-pin {
+  min-height: 100vh; width: 100%; display: none;
+  flex-direction: column; align-items: center;
+  justify-content: flex-end; padding-bottom: 20%;
+  background-image: url('https://raw.githubusercontent.com/Alexander-art-moises/operadores_app/main/FONDO%20DE%20FONDOS.png');
+  background-size: cover; background-position: center top; background-repeat: no-repeat;
+}
+@media (min-width: 768px) {
+  #pantalla-pin {
+    background-image: url('https://raw.githubusercontent.com/Alexander-art-moises/colaboradores_app/main/PARA_PC.png');
+    background-size: cover; background-position: center center;
+    justify-content: center; padding-bottom: 0;
+  }
+  .pin-card { max-width: 380px; }
+  .pin-frase { display: none; }
+}
+.pin-card {
+  width: 80%; max-width: 300px; display: flex;
+  flex-direction: column; align-items: center; gap: 14px;
+}
+.pin-input {
+  width: 100%; padding: 5px; font-size: 28px; text-align: center;
+  letter-spacing: 12px; border: 2px solid #ff8a00; border-radius: 14px;
+  outline: none; color: #ff8a00; background: rgba(255,255,255,0.88);
+}
+.pin-input:focus { border-color: #ff8a00; background: rgba(255,255,255,0.97); }
+.pin-input::placeholder { color: #ff8a00; opacity: 1; }
+.btn-entrar {
+  width: 100%; padding: 15px; background: #1F4E79; color: white;
+  border: none; border-radius: 14px; font-size: 16px; font-weight: bold;
+  cursor: pointer; letter-spacing: 2px;
+}
+.btn-entrar:hover { background: #2E75B6; }
+.pin-error {
+  color: #fff; background: rgba(192,0,0,0.80); padding: 7px 16px;
+  border-radius: 8px; font-size: 13px; text-align: center; display: none; width: 100%;
+}
+.pin-frase {
+  color: white; font-size: 20px; font-style: italic; font-weight: bold;
+  text-align: center; line-height: 1.6; margin-top: 6px;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ══════ PANTALLA PRINCIPAL ══════ */
+#pantalla-main { display: none; max-width: 420px; margin: 0 auto; padding-bottom: 32px; }
+
+.main-header {
+  background: #1f3055; padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.main-header h2 { color: white; font-size: 16px; }
+.main-user { color: #ff7300; font-size: 12px; font-weight: bold; margin-top: 2px; }
+
+.main-tabs {
+  display: flex; background: white;
+  border-bottom: 2px solid #c5d3ea;
+}
+.main-tab {
+  flex: 1; text-align: center; padding: 12px 4px; font-size: 12px;
+  color: #888; cursor: pointer; border-bottom: 3px solid transparent;
+  margin-bottom: -2px; font-weight: bold;
+}
+.main-tab.activa { color: #1f3055; border-bottom-color: #ff7300; }
+.main-tab-content { display: none; }
+.main-tab-content.activa { display: block; }
+
+/* ══════ FORMULARIO ══════ */
+.form-section { padding: 14px; }
+.form-group { margin-bottom: 14px; }
+.form-group label {
+  display: block; font-size: 11px; color: #aaa;
+  margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.form-group select,
+.form-group input,
+.form-group textarea {
+  width: 100%; padding: 10px 12px; border-radius: 10px;
+  border: 2px solid #354466; background: #2a3650;
+  color: white; font-size: 14px; outline: none;
+  font-family: Arial, sans-serif;
+}
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus { border-color: #ff7300; }
+.form-group select option { background: #2a3650; }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.btn-enviar {
+  width: 100%; padding: 14px; background: #ff7300; color: white;
+  border: none; border-radius: 14px; font-size: 15px; font-weight: bold;
+  cursor: pointer; letter-spacing: 1px; margin-top: 6px;
+}
+.btn-enviar:hover { background: #e06500; }
+.btn-enviar:disabled { background: #666; cursor: not-allowed; }
+.form-msg {
+  text-align: center; font-size: 13px; padding: 10px;
+  border-radius: 8px; margin-top: 10px; display: none;
+}
+.form-msg.ok  { background: #E2EFDA; color: #375623; }
+.form-msg.err { background: #FCE4D6; color: #833C00; }
+
+/* ══════ LISTA REPORTES ══════ */
+.lista-section { padding: 14px; }
+.reporte-item {
+  background: white; border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 10px; border: 1px solid #e0e0e0;
+  cursor: pointer; border-left: 4px solid #ff7300;
+}
+.reporte-item.levantado { border-left-color: #4CAF50; opacity: 0.8; }
+.reporte-item:hover { background: #f0f4ff; }
+.rep-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.rep-area { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 3px; }
+.rep-equipo { font-size: 13px; font-weight: bold; color: #1f3055; }
+.rep-problema { font-size: 12px; color: #666; margin-top: 2px; }
+.rep-fecha { font-size: 10px; color: #aaa; margin-top: 4px; }
+.rep-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.badge-estado {
+  font-size: 11px; font-weight: bold; padding: 3px 10px;
+  border-radius: 20px; white-space: nowrap;
+}
+.badge-PENDIENTE { background: #FFF2CC; color: #7F5B00; border: 1px solid #FFD966; }
+.badge-LEVANTADO { background: #E2EFDA; color: #375623; border: 1px solid #A9D18E; }
+.strikes-count { font-size: 11px; color: #C00000; font-weight: bold; }
+.sin-datos { text-align: center; color: #aaa; font-size: 13px; padding: 30px 0; }
+
+/* ══════ DETALLE REPORTE ══════ */
+#pantalla-detalle { display: none; max-width: 420px; margin: 0 auto; padding-bottom: 32px; }
+.detalle-header {
+  background: #1f3055; padding: 16px 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.detalle-header h2 { color: white; font-size: 15px; flex: 1; }
+.detalle-body { padding: 14px; }
+.detalle-box {
+  background: white; border-radius: 10px; padding: 14px;
+  margin-bottom: 12px; border: 1px solid #c5d3ea;
+}
+.detalle-label { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 3px; }
+.detalle-valor { font-size: 14px; font-weight: bold; color: #1f3055; }
+.detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.detalle-descripcion {
+  background: white; border-radius: 10px; padding: 14px;
+  margin-bottom: 12px; border: 1px solid #c5d3ea;
+}
+.detalle-descripcion p { font-size: 13px; color: #333; line-height: 1.5; margin-top: 4px; }
+
+.strikes-section {
+  background: #fff8f0; border-radius: 10px; padding: 14px;
+  margin-bottom: 12px; border: 1px solid #ff7300;
+}
+.strikes-titulo {
+  font-size: 11px; font-weight: bold; color: #cc5e00;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.strike-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+.strike-dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #C00000; display: inline-block;
+}
+.strike-dot.vacio { background: #ddd; }
+.btn-strike {
+  width: 100%; padding: 10px; background: #C00000; color: white;
+  border: none; border-radius: 10px; font-size: 13px;
+  font-weight: bold; cursor: pointer;
+}
+.btn-strike:hover { background: #a00000; }
+.btn-strike:disabled { background: #aaa; cursor: not-allowed; }
+
+.btn-levantar {
+  width: 100%; padding: 14px; background: #1f3055; color: white;
+  border: none; border-radius: 14px; font-size: 14px;
+  font-weight: bold; cursor: pointer; margin-bottom: 10px;
+}
+.btn-levantar:hover { background: #264984; }
+
+.btn-pdf {
+  width: 100%; padding: 14px; background: #ff7300; color: white;
+  border: none; border-radius: 14px; font-size: 14px;
+  font-weight: bold; cursor: pointer; margin-bottom: 10px;
+}
+.btn-pdf:hover { background: #e06500; }
+
+.btn-volver {
+  display: block; width: 100%; padding: 13px; background: #C00000;
+  color: white; border: none; border-top: 1px solid #ddd;
+  font-size: 13px; text-align: center; cursor: pointer; font-weight: bold;
+}
+.btn-volver:hover { background: #a00000; }
+
+.btn-cerrar-sesion {
+  display: block; width: 100%; padding: 13px; background: #C00000;
+  color: white; border: none; border-top: 1px solid #ddd;
+  font-size: 13px; text-align: center; cursor: pointer; font-weight: bold;
+}
+.btn-cerrar-sesion:hover { background: #a00000; }
+</style>
+</head>
+<body>
+
+<!-- CARGA -->
+<div id="pantalla-carga">
+  <div class="spinner"></div>
+  <p class="carga-texto">Cargando datos...</p>
+</div>
+
+<!-- PIN -->
+<div id="pantalla-pin">
+  <div class="pin-card">
+    <input class="pin-input" type="password" id="input-pin"
+           maxlength="6" placeholder="••••" inputmode="numeric" pattern="[0-9]*"
+           onkeydown="if(event.key==='Enter') verificarPin()">
+    <button class="btn-entrar" onclick="verificarPin()">INGRESAR</button>
+    <p class="pin-error" id="pin-error">PIN incorrecto.</p>
+    <p class="pin-frase">Cada reporte cuenta.<br>Tu voz mueve la planta.</p>
+  </div>
+</div>
+
+<!-- PANTALLA PRINCIPAL -->
+<div id="pantalla-main">
+  <div class="main-header">
+    <div>
+      <h2>Reporte 360°</h2>
+      <div class="main-user" id="main-user"></div>
+    </div>
+    <button class="btn-cerrar-sesion" onclick="cerrarSesion()" style="width:auto;padding:8px 14px;border-radius:8px;border-top:none;">✕ Salir</button>
+  </div>
+
+  <div class="main-tabs">
+    <div class="main-tab activa" onclick="cambiarMainTab(0)">📋 Mis Reportes</div>
+    <div class="main-tab" onclick="cambiarMainTab(1)">➕ Nuevo Reporte</div>
+  </div>
+
+  <!-- TAB 1: MIS REPORTES -->
+  <div class="main-tab-content activa" id="tab-mis-reportes">
+    <div class="lista-section" id="lista-reportes">
+      <p class="sin-datos">Cargando reportes...</p>
+    </div>
+  </div>
+
+  <!-- TAB 2: NUEVO REPORTE -->
+  <div class="main-tab-content" id="tab-nuevo-reporte">
+    <div class="form-section">
+      <div class="form-group">
+        <label>Área</label>
+        <select id="f-area">
+          <option value="">— Selecciona un área —</option>
+          <option>ÁREA 100 - CHANCADO</option>
+          <option>ÁREA 200 - MOLIENDA</option>
+          <option>ÁREA 300 - CIANURACIÓN</option>
+          <option>ÁREA 400 - CCD</option>
+          <option>ÁREA 450 - DCT</option>
+          <option>ÁREA 500 - CAL</option>
+          <option>ÁREA 600 - CIANURO</option>
+          <option>ÁREA 700</option>
+          <option>ÁREA 800 - REACTIVOS</option>
+          <option>ÁREA 900 - MERRIL CROWE</option>
+          <option>ÁREA 1100 - FUNDICIÓN</option>
+          <option>ÁREA 1200 - DETOXIFICACIÓN</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nombre del equipo</label>
+        <input type="text" id="f-equipo" placeholder="Ej: Chancado primaria, Bomba P-101...">
+      </div>
+      <div class="form-group">
+        <label>Tipo de problema</label>
+        <input type="text" id="f-problema" placeholder="Ej: Problema de aceite, falla eléctrica...">
+      </div>
+      <div class="form-group">
+        <label>Descripción detallada</label>
+        <textarea id="f-descripcion" placeholder="Describe el problema con el mayor detalle posible..."></textarea>
+      </div>
+      <button class="btn-enviar" id="btn-enviar" onclick="enviarReporte()">ENVIAR REPORTE</button>
+      <div class="form-msg" id="form-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANTALLA DETALLE -->
+<div id="pantalla-detalle">
+  <div class="detalle-header">
+    <button onclick="volverALista()" style="background:rgba(255,255,255,0.2);color:white;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:bold;">← Volver</button>
+    <h2 id="detalle-titulo">Reporte</h2>
+    <span id="detalle-badge" class="badge-estado"></span>
+  </div>
+  <div class="detalle-body">
+    <div class="detalle-grid">
+      <div class="detalle-box">
+        <div class="detalle-label">Área</div>
+        <div class="detalle-valor" id="d-area"></div>
+      </div>
+      <div class="detalle-box">
+        <div class="detalle-label">Fecha</div>
+        <div class="detalle-valor" id="d-fecha"></div>
+      </div>
+    </div>
+    <div class="detalle-box" style="margin-bottom:12px">
+      <div class="detalle-label">Equipo</div>
+      <div class="detalle-valor" id="d-equipo"></div>
+    </div>
+    <div class="detalle-box" style="margin-bottom:12px">
+      <div class="detalle-label">Tipo de problema</div>
+      <div class="detalle-valor" id="d-problema"></div>
+    </div>
+    <div class="detalle-descripcion">
+      <div class="detalle-label">Descripción</div>
+      <p id="d-descripcion"></p>
+    </div>
+    <div class="detalle-box" style="margin-bottom:12px">
+      <div class="detalle-label">Reportado por</div>
+      <div class="detalle-valor" id="d-nombre"></div>
+    </div>
+
+    <!-- STRIKES -->
+    <div class="strikes-section">
+      <div class="strikes-titulo">⚠ Strikes — Problema sin resolver</div>
+      <div class="strike-bar" id="strike-bar"></div>
+      <div style="font-size:11px;color:#888;margin-bottom:8px;" id="strike-texto"></div>
+      <button class="btn-strike" id="btn-strike" onclick="darStrike()">+ Agregar Strike</button>
+    </div>
+
+    <!-- LEVANTAR (solo supervisores) -->
+    <div id="div-levantar" style="display:none;">
+      <button class="btn-levantar" onclick="levantarReporte()">✅ MARCAR COMO LEVANTADO</button>
+    </div>
+
+    <!-- PDF -->
+    <button class="btn-pdf" onclick="generarPDF()">📄 DESCARGAR PDF</button>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbx59HeaakSqkuYjO8Gx7xk6lYdh5HCiYYfDtIvtS-6KVLcIoAlMIOotoQTKH1gsakZxiA/exec";
+const SHEETS_ID    = "1FoN-S-KOjs1vRuekQktGnX17_2pduM9ZjhDG3g8t5ZM";
+const PIN_SUPER    = "2002";
+const PIN_MAESTRO  = "0000";
+const DNI_ALEX     = "75073340";
+
+let usuarioActual  = null;
+let esSuper        = false;
+let colaboradores  = [];
+let todosReportes  = [];
+let todosStrikes   = [];
+let reporteActual  = null;
+
+/* ══════════════════════════════
+   CARGA INICIAL
+══════════════════════════════ */
+async function cargarDatos() {
+  try {
+    const res  = await fetch(`https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:csv&sheet=1_Colaboradores`);
+    const text = await res.text();
+    colaboradores = parseCSV(text);
+    document.getElementById("pantalla-carga").style.display = "none";
+    document.getElementById("pantalla-pin").style.display   = "flex";
+  } catch(e) {
+    document.querySelector(".carga-texto").textContent = "Error al cargar. Verifica tu conexión.";
+  }
+}
+
+function parseCSV(text) {
+  const lines   = text.trim().split("\n");
+  const headers = parseLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = parseLine(line);
+    const obj  = {};
+    headers.forEach((h, i) => obj[h.trim().replace(/"/g,"")] = (vals[i] || "").trim().replace(/"/g,""));
+    return obj;
+  });
+}
+
+function parseLine(line) {
+  const result = [];
+  let cur = "", inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur); cur = ""; }
+    else { cur += c; }
+  }
+  result.push(cur);
+  return result;
+}
+
+const dniLimpio = (d) => String(parseInt(d || "0"));
+
+/* ══════════════════════════════
+   PIN
+══════════════════════════════ */
+function verificarPin() {
+  const pin = document.getElementById("input-pin").value.trim();
+  document.getElementById("pin-error").style.display = "none";
+
+  if (pin === PIN_MAESTRO || pin === PIN_SUPER) {
+    esSuper = true;
+    usuarioActual = { DNI: "0000", Nombre: pin === PIN_MAESTRO ? "ADMINISTRADOR" : "SUPERVISOR", Cargo: "SUPERVISIÓN" };
+    iniciarApp();
+    return;
+  }
+
+  const op = colaboradores.find(c => {
+    const dni = dniLimpio(c.DNI);
+    return dni.startsWith(pin) && pin.length === 4;
+  });
+
+  if (op) {
+    esSuper = false;
+    usuarioActual = op;
+    iniciarApp();
+    return;
+  }
+
+  const e = document.getElementById("pin-error");
+  e.textContent = "PIN incorrecto. Intenta nuevamente.";
+  e.style.display = "block";
+  document.getElementById("input-pin").value = "";
+}
+
+async function iniciarApp() {
+  document.getElementById("pantalla-pin").style.display = "none";
+  document.getElementById("pantalla-main").style.display = "block";
+  document.getElementById("main-user").textContent = usuarioActual.Nombre + " · " + (usuarioActual.Cargo || "OPERADOR");
+  await cargarReportes();
+}
+
+/* ══════════════════════════════
+   CARGAR REPORTES
+══════════════════════════════ */
+async function cargarReportes() {
+  try {
+    const [rRes, sRes] = await Promise.all([
+      fetch(SCRIPT_URL + "?accion=getReportes"),
+      fetch(SCRIPT_URL + "?accion=getStrikes")
+    ]);
+    todosReportes = await rRes.json();
+    todosStrikes  = await sRes.json();
+    renderListaReportes();
+  } catch(e) {
+    document.getElementById("lista-reportes").innerHTML = '<p class="sin-datos">Error al cargar reportes.</p>';
+  }
+}
+
+function renderListaReportes() {
+  const el = document.getElementById("lista-reportes");
+  el.innerHTML = "";
+
+  let reportesFiltrados = esSuper
+    ? todosReportes
+    : todosReportes.filter(r => dniLimpio(r.DNI) === dniLimpio(usuarioActual.DNI));
+
+  if (reportesFiltrados.length === 0) {
+    el.innerHTML = '<p class="sin-datos">No hay reportes aún.</p>';
+    return;
+  }
+
+  /* Orden: más recientes primero */
+  reportesFiltrados = reportesFiltrados.slice().reverse();
+
+  reportesFiltrados.forEach(r => {
+    const strikes = todosStrikes.filter(s => s.ID_Reporte === r.ID).length;
+    const div = document.createElement("div");
+    div.className = "reporte-item" + (r.Estado === "LEVANTADO" ? " levantado" : "");
+    div.onclick   = () => abrirDetalle(r);
+    div.innerHTML = `
+      <div class="rep-header">
+        <div>
+          <div class="rep-area">${r.Area || ""}</div>
+          <div class="rep-equipo">${r.Equipo || ""}</div>
+          <div class="rep-problema">${r.Problema || ""}</div>
+        </div>
+        <span class="badge-estado badge-${r.Estado}">${r.Estado}</span>
+      </div>
+      <div class="rep-footer">
+        <div class="rep-fecha">📅 ${r.Fecha || ""} · ${r.Nombre || ""}</div>
+        ${strikes > 0 ? `<div class="strikes-count">⚠ ${strikes} strike${strikes > 1 ? "s" : ""}</div>` : ""}
+      </div>
+    `;
+    el.appendChild(div);
+  });
+}
+
+/* ══════════════════════════════
+   NUEVO REPORTE
+══════════════════════════════ */
+async function enviarReporte() {
+  const area       = document.getElementById("f-area").value.trim();
+  const equipo     = document.getElementById("f-equipo").value.trim();
+  const problema   = document.getElementById("f-problema").value.trim();
+  const descripcion = document.getElementById("f-descripcion").value.trim();
+  const msg        = document.getElementById("form-msg");
+
+  if (!area || !equipo || !problema || !descripcion) {
+    msg.textContent = "Por favor completa todos los campos.";
+    msg.className = "form-msg err";
+    msg.style.display = "block";
+    return;
+  }
+
+  const btn = document.getElementById("btn-enviar");
+  btn.disabled = true;
+  btn.textContent = "Enviando...";
+  msg.style.display = "none";
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        accion: "nuevoReporte",
+        dni:    dniLimpio(usuarioActual.DNI),
+        nombre: usuarioActual.Nombre,
+        area, equipo, problema, descripcion
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      msg.textContent = "✅ Reporte enviado correctamente.";
+      msg.className   = "form-msg ok";
+      msg.style.display = "block";
+      document.getElementById("f-area").value        = "";
+      document.getElementById("f-equipo").value      = "";
+      document.getElementById("f-problema").value    = "";
+      document.getElementById("f-descripcion").value = "";
+      await cargarReportes();
+      setTimeout(() => { cambiarMainTab(0); }, 1500);
+    } else {
+      throw new Error("Error del servidor");
+    }
+  } catch(e) {
+    msg.textContent   = "❌ Error al enviar. Intenta de nuevo.";
+    msg.className     = "form-msg err";
+    msg.style.display = "block";
+  }
+
+  btn.disabled = false;
+  btn.textContent = "ENVIAR REPORTE";
+}
+
+/* ══════════════════════════════
+   DETALLE DE REPORTE
+══════════════════════════════ */
+function abrirDetalle(r) {
+  reporteActual = r;
+  const strikes = todosStrikes.filter(s => s.ID_Reporte === r.ID);
+
+  document.getElementById("pantalla-main").style.display    = "none";
+  document.getElementById("pantalla-detalle").style.display = "block";
+
+  document.getElementById("detalle-titulo").textContent = r.ID || "Reporte";
+  document.getElementById("d-area").textContent         = r.Area || "—";
+  document.getElementById("d-fecha").textContent        = r.Fecha || "—";
+  document.getElementById("d-equipo").textContent       = r.Equipo || "—";
+  document.getElementById("d-problema").textContent     = r.Problema || "—";
+  document.getElementById("d-descripcion").textContent  = r.Descripcion || "—";
+  document.getElementById("d-nombre").textContent       = r.Nombre + " · DNI: " + r.DNI;
+
+  const badge = document.getElementById("detalle-badge");
+  badge.textContent  = r.Estado;
+  badge.className    = "badge-estado badge-" + r.Estado;
+
+  /* Strikes */
+  const strikesEl = document.getElementById("strike-bar");
+  strikesEl.innerHTML = "";
+  for (let i = 0; i < 20; i++) {
+    const dot = document.createElement("span");
+    dot.className = "strike-dot" + (i < strikes.length ? "" : " vacio");
+    strikesEl.appendChild(dot);
+  }
+  document.getElementById("strike-texto").textContent = `${strikes.length}/20 strikes`;
+
+  const btnStrike = document.getElementById("btn-strike");
+  const yaHizoStrike = strikes.some(s => dniLimpio(s.DNI) === dniLimpio(usuarioActual.DNI));
+  const esPropio     = dniLimpio(r.DNI) === dniLimpio(usuarioActual.DNI);
+
+  /* Solo puede dar strike si: no es su propio reporte, lleva más de 1 día, no ha dado strike antes y no está levantado */
+  const fechaReporte = new Date(r.Fecha);
+  const ahora        = new Date();
+  const diffHoras    = (ahora - fechaReporte) / (1000 * 60 * 60);
+  const puedeStrike  = !esPropio && diffHoras >= 24 && !yaHizoStrike && r.Estado !== "LEVANTADO" && strikes.length < 20;
+
+  btnStrike.disabled   = !puedeStrike;
+  btnStrike.title      = !puedeStrike
+    ? (r.Estado === "LEVANTADO" ? "Ya fue levantado" : yaHizoStrike ? "Ya diste strike" : esPropio ? "No puedes dar strike a tu propio reporte" : "Disponible después de 24h")
+    : "";
+
+  /* Botón levantar solo para supervisores */
+  const divLevantar = document.getElementById("div-levantar");
+  divLevantar.style.display = (esSuper && r.Estado !== "LEVANTADO") ? "block" : "none";
+}
+
+function volverALista() {
+  document.getElementById("pantalla-detalle").style.display = "none";
+  document.getElementById("pantalla-main").style.display    = "block";
+  reporteActual = null;
+}
+
+/* ══════════════════════════════
+   STRIKES
+══════════════════════════════ */
+async function darStrike() {
+  if (!reporteActual) return;
+  const btn = document.getElementById("btn-strike");
+  btn.disabled = true;
+  btn.textContent = "Guardando...";
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        accion:     "nuevoStrike",
+        id_reporte: reporteActual.ID,
+        dni:        dniLimpio(usuarioActual.DNI),
+        nombre:     usuarioActual.Nombre
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      await cargarReportes();
+      const r = todosReportes.find(x => x.ID === reporteActual.ID);
+      if (r) abrirDetalle(r);
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = "+ Agregar Strike";
+  }
+}
+
+/* ══════════════════════════════
+   LEVANTAR REPORTE
+══════════════════════════════ */
+async function levantarReporte() {
+  if (!reporteActual || !esSuper) return;
+  if (!confirm("¿Confirmas que este problema fue resuelto?")) return;
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        accion:     "levantarReporte",
+        id_reporte: reporteActual.ID,
+        nombre:     usuarioActual.Nombre
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      await cargarReportes();
+      const r = todosReportes.find(x => x.ID === reporteActual.ID);
+      if (r) abrirDetalle(r);
+    }
+  } catch(e) {
+    alert("Error al levantar el reporte.");
+  }
+}
+
+/* ══════════════════════════════
+   GENERAR PDF
+══════════════════════════════ */
+function generarPDF() {
+  if (!reporteActual) return;
+  const r       = reporteActual;
+  const strikes = todosStrikes.filter(s => s.ID_Reporte === r.ID).length;
+
+  const ventana = window.open("", "_blank");
+  ventana.document.write(`
+    <!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>Reporte ${r.ID}</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 40px; color: #333; max-width: 700px; margin: 0 auto; }
+      .header { background: #1f3055; color: white; padding: 20px 30px; border-radius: 10px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+      .header h1 { font-size: 22px; margin: 0; }
+      .header p  { font-size: 12px; opacity: 0.8; margin: 4px 0 0; }
+      .badge { padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+      .badge-PENDIENTE { background: #FFF2CC; color: #7F5B00; }
+      .badge-LEVANTADO { background: #E2EFDA; color: #375623; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+      .box label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 4px; }
+      .box p { font-size: 14px; font-weight: bold; color: #1f3055; margin: 0; }
+      .desc { border: 1px solid #ddd; border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+      .desc label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 6px; }
+      .desc p { font-size: 13px; line-height: 1.6; margin: 0; }
+      .strikes { background: #fff8f0; border: 1px solid #ff7300; border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+      .strikes label { font-size: 10px; color: #cc5e00; text-transform: uppercase; display: block; margin-bottom: 6px; font-weight: bold; }
+      .strikes p { font-size: 18px; font-weight: bold; color: #C00000; margin: 0; }
+      .footer { text-align: center; font-size: 10px; color: #aaa; margin-top: 30px; padding-top: 14px; border-top: 1px solid #eee; }
+    </style>
+    </head><body>
+    <div class="header">
+      <div>
+        <h1>Reporte 360° · Planta Óxidos</h1>
+        <p>Volcán Compañía Minera S.A.A. · ${r.ID}</p>
+      </div>
+      <span class="badge badge-${r.Estado}">${r.Estado}</span>
+    </div>
+    <div class="grid">
+      <div class="box"><label>Área</label><p>${r.Area || "—"}</p></div>
+      <div class="box"><label>Fecha de reporte</label><p>${r.Fecha || "—"}</p></div>
+      <div class="box"><label>Equipo</label><p>${r.Equipo || "—"}</p></div>
+      <div class="box"><label>Tipo de problema</label><p>${r.Problema || "—"}</p></div>
+    </div>
+    <div class="desc">
+      <label>Descripción del problema</label>
+      <p>${r.Descripcion || "—"}</p>
+    </div>
+    <div class="box" style="margin-bottom:14px">
+      <label>Reportado por</label>
+      <p>${r.Nombre || "—"} · DNI: ${r.DNI || "—"}</p>
+    </div>
+    <div class="strikes">
+      <label>⚠ Strikes acumulados</label>
+      <p>${strikes} / 20</p>
+    </div>
+    ${r.Estado === "LEVANTADO" ? `
+    <div class="box" style="margin-bottom:14px;border-color:#4CAF50">
+      <label>Levantado por</label>
+      <p>${r.LevantadoPor || "—"} · ${r.FechaLevantado || "—"}</p>
+    </div>` : ""}
+    <div class="footer">
+      Generado por Reporte 360° · Planta Óxidos · Volcán Compañía Minera S.A.A.<br>
+      ${new Date().toLocaleString("es-PE")}
+    </div>
+    <script>window.onload = () => { window.print(); }<\/script>
+    </body></html>
+  `);
+  ventana.document.close();
+}
+
+/* ══════════════════════════════
+   UTILIDADES
+══════════════════════════════ */
+function cambiarMainTab(idx) {
+  document.querySelectorAll(".main-tab").forEach((t, i)         => t.classList.toggle("activa", i === idx));
+  document.querySelectorAll(".main-tab-content").forEach((c, i) => c.classList.toggle("activa", i === idx));
+}
+
+function cerrarSesion() { location.reload(); }
+
+cargarDatos();
+</script>
+</body>
+</html>
