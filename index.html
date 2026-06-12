@@ -693,7 +693,7 @@ async function enviarReporte() {
   msg.style.display="none";
 
   try {
-    /* Un solo POST con datos + foto juntos */
+    /* PASO 1: solo datos, sin foto — ligero, siempre llega */
     const res = await fetch(SCRIPT_URL, {
       method:"POST", redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -701,22 +701,38 @@ async function enviarReporte() {
         accion:"nuevoReporte",
         dni:   dniLimpio(usuarioActual.DNI),
         nombre: usuarioActual.NOMBRE||usuarioActual.Nombre||"",
-        area, equipo, problema, descripcion,
-        foto: fotoReporteB64
+        area, equipo, problema, descripcion
       })
     });
 
     let data;
-    try { data = JSON.parse(await res.text()); } catch(e){ data={ok:false}; }
+    try { data = JSON.parse(await res.text()); } catch(e){ data={ok:true,id:null}; }
+    const idGenerado = data.id;
 
-    if (data.ok) {
-      msg.textContent="✅ Reporte enviado correctamente.";
-      msg.className="form-msg ok"; msg.style.display="block";
-      limpiarFormulario();
-      mostrarToast("✅ Guardado en Sheets","ok");
+    /* PASO 2: foto por separado con no-cors (fire and forget) */
+    if (fotoReporteB64 && idGenerado) {
+      fetch(SCRIPT_URL, {
+        method:"POST",
+        mode:"no-cors",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: JSON.stringify({
+          accion:"subirFotoReporte",
+          id_reporte: idGenerado,
+          foto: fotoReporteB64
+        })
+      }).catch(()=>{});
+    }
+
+    msg.textContent="✅ Reporte enviado correctamente.";
+    msg.className="form-msg ok"; msg.style.display="block";
+    limpiarFormulario();
+    mostrarToast("✅ Guardado en Sheets","ok");
+    /* Esperamos 4s para que la foto llegue antes de recargar */
+    setTimeout(async()=>{
       await cargarReportes();
-      setTimeout(()=>{ cambiarMainTab(0); },1200);
-    } else { throw new Error(); }
+      cambiarMainTab(0);
+    }, 4000);
+
   } catch(e) {
     msg.textContent="⚠ Verificando envío...";
     msg.className="form-msg ok"; msg.style.display="block";
@@ -726,7 +742,7 @@ async function enviarReporte() {
       mostrarToast("✅ Reporte enviado","ok");
       limpiarFormulario();
       setTimeout(()=>{ cambiarMainTab(0); },800);
-    },2500);
+    },3000);
   }
 
   btn.disabled=false; btn.textContent="ENVIAR REPORTE";
@@ -869,23 +885,41 @@ async function levantarReporte() {
   if (!reporteActual||!esSuper) return;
   if (!confirm("¿Confirmas que este problema fue resuelto?")) return;
 
+  const idReporte = reporteActual.ID;
+
   try {
+    /* Paso 1: levantar sin foto */
     await fetch(SCRIPT_URL,{
       method:"POST", redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({
         accion:"levantarReporte",
-        id_reporte: reporteActual.ID,
-        nombre: usuarioActual.NOMBRE||"",
-        foto: fotoLevantarB64||null
+        id_reporte: idReporte,
+        nombre: usuarioActual.NOMBRE||""
       })
     });
+
+    /* Paso 2: foto opcional con no-cors */
+    if (fotoLevantarB64) {
+      fetch(SCRIPT_URL,{
+        method:"POST",
+        mode:"no-cors",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: JSON.stringify({
+          accion:"subirFotoLevantado",
+          id_reporte: idReporte,
+          foto: fotoLevantarB64
+        })
+      }).catch(()=>{});
+    }
+
     setTimeout(async()=>{
       await cargarReportes();
-      const r=todosReportes.find(x=>x.ID===reporteActual.ID);
+      const r=todosReportes.find(x=>x.ID===idReporte);
       if(r) abrirDetalle(r);
       mostrarToast("✅ Reporte levantado","ok");
-    },1500);
+    }, fotoLevantarB64 ? 4000 : 1500);
+
   } catch(e) { mostrarToast("Error al levantar","err"); }
 }
 
@@ -996,10 +1030,32 @@ async function iniciarConDNI(dni) {
     const res  = await fetch(`https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:csv&sheet=1_Colaboradores`);
     const text = await res.text();
     colaboradores = parseCSV(text);
+
+    /* Si ya hay sesión activa del mismo DNI, no reiniciar */
+    const sesionExistente = sessionStorage.getItem("r360_usuario");
+    if (sesionExistente) {
+      const u = JSON.parse(sesionExistente);
+      if (dniLimpio(u.DNI) === dniLimpio(dni)) {
+        recuperarSesion();
+        mostrarMain();
+        /* Ir directo a Nuevo Reporte */
+        setTimeout(()=>{ cambiarMainTab(1); }, 300);
+        return;
+      }
+    }
+
     const op = colaboradores.find(c => dniLimpio(c.DNI)===dniLimpio(dni));
-    if (op) { esSuper=false; usuarioActual=op; guardarSesion(); mostrarMain(); }
-    else { document.getElementById("pantalla-carga").style.display="none"; document.getElementById("pantalla-pin").style.display="flex"; }
-  } catch(e) { document.querySelector(".carga-texto").textContent="Error al cargar."; }
+    if (op) {
+      esSuper=false; usuarioActual=op;
+      guardarSesion(); mostrarMain();
+      setTimeout(()=>{ cambiarMainTab(1); }, 300);
+    } else {
+      document.getElementById("pantalla-carga").style.display="none";
+      document.getElementById("pantalla-pin").style.display="flex";
+    }
+  } catch(e) {
+    document.querySelector(".carga-texto").textContent="Error al cargar.";
+  }
 }
 
 (function arrancar() {
