@@ -67,14 +67,12 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
 }
 
 #pantalla-main { display: none; max-width: 420px; margin: 0 auto; padding-bottom: 32px; }
-
 .main-header {
   background: #1f3055; padding: 16px 20px;
   display: flex; align-items: center; justify-content: space-between;
 }
 .main-header h2 { color: white; font-size: 16px; }
 .main-user { color: #ff7300; font-size: 12px; font-weight: bold; margin-top: 2px; }
-
 .main-tabs { display: flex; background: white; border-bottom: 2px solid #c5d3ea; }
 .main-tab {
   flex: 1; text-align: center; padding: 12px 4px; font-size: 12px;
@@ -96,14 +94,32 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
 .form-group textarea {
   width: 100%; padding: 10px 12px; border-radius: 10px;
   border: 2px solid #354466; background: #2a3650;
-  color: white; font-size: 14px; outline: none;
-  font-family: Arial, sans-serif;
+  color: white; font-size: 14px; outline: none; font-family: Arial, sans-serif;
 }
 .form-group select:focus,
 .form-group input:focus,
 .form-group textarea:focus { border-color: #ff7300; }
 .form-group select option { background: #2a3650; }
 .form-group textarea { resize: vertical; min-height: 80px; }
+
+/* ══ FOTO UPLOAD ══ */
+.foto-upload-area {
+  width: 100%; border: 2px dashed #354466; border-radius: 10px;
+  background: #2a3650; padding: 16px; text-align: center;
+  cursor: pointer; transition: border-color 0.2s;
+}
+.foto-upload-area:hover { border-color: #ff7300; }
+.foto-upload-area.tiene-foto { border-color: #4CAF50; border-style: solid; padding: 8px; }
+.foto-upload-icon { font-size: 32px; margin-bottom: 6px; }
+.foto-upload-texto { color: #aaa; font-size: 13px; }
+.foto-preview {
+  width: 100%; max-height: 200px; object-fit: cover;
+  border-radius: 8px; display: none;
+}
+.foto-preview.visible { display: block; }
+.foto-label-requerida { color: #ff7300; font-size: 11px; margin-top: 4px; }
+input[type="file"] { display: none; }
+
 .btn-enviar {
   width: 100%; padding: 14px; background: #ff7300; color: white;
   border: none; border-radius: 14px; font-size: 15px; font-weight: bold;
@@ -130,12 +146,8 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
 .rep-area { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 3px; }
 .rep-equipo { font-size: 13px; font-weight: bold; color: #1f3055; }
 .rep-problema { font-size: 12px; color: #666; margin-top: 2px; }
-.rep-fecha { font-size: 10px; color: #aaa; margin-top: 4px; }
 .rep-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
-.badge-estado {
-  font-size: 11px; font-weight: bold; padding: 3px 10px;
-  border-radius: 20px; white-space: nowrap;
-}
+.badge-estado { font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
 .badge-PENDIENTE { background: #FFF2CC; color: #7F5B00; border: 1px solid #FFD966; }
 .badge-LEVANTADO { background: #E2EFDA; color: #375623; border: 1px solid #A9D18E; }
 .strikes-count { font-size: 11px; color: #C00000; font-weight: bold; }
@@ -161,14 +173,49 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
 }
 .detalle-descripcion p { font-size: 13px; color: #333; line-height: 1.5; margin-top: 4px; }
 
+/* ══ FOTOS EN DETALLE ══ */
+.fotos-section {
+  margin-bottom: 12px; display: grid;
+  grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.foto-card {
+  background: white; border-radius: 10px; overflow: hidden;
+  border: 1px solid #c5d3ea;
+}
+.foto-card-label {
+  font-size: 10px; font-weight: bold; text-transform: uppercase;
+  padding: 6px 10px; letter-spacing: 0.5px;
+}
+.foto-card-label.antes  { background: #FFF2CC; color: #7F5B00; }
+.foto-card-label.despues { background: #E2EFDA; color: #375623; }
+.foto-card img {
+  width: 100%; aspect-ratio: 4/3; object-fit: cover;
+  display: block; cursor: pointer;
+}
+.foto-card-vacia {
+  aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
+  background: #f5f5f5; color: #bbb; font-size: 11px; text-align: center; padding: 8px;
+}
+
+/* ══ FOTO LEVANTAR ══ */
+.foto-levantar-area {
+  width: 100%; border: 2px dashed #354466; border-radius: 10px;
+  background: #2a3650; padding: 14px; text-align: center;
+  cursor: pointer; margin-bottom: 10px;
+}
+.foto-levantar-area:hover { border-color: #4CAF50; }
+.foto-levantar-area.tiene-foto { border-color: #4CAF50; border-style: solid; padding: 8px; }
+.foto-levantar-preview {
+  width: 100%; max-height: 160px; object-fit: cover;
+  border-radius: 8px; display: none;
+}
+.foto-levantar-preview.visible { display: block; }
+
 .strikes-section {
   background: #fff8f0; border-radius: 10px; padding: 14px;
   margin-bottom: 12px; border: 1px solid #ff7300;
 }
-.strikes-titulo {
-  font-size: 11px; font-weight: bold; color: #cc5e00;
-  text-transform: uppercase; margin-bottom: 8px;
-}
+.strikes-titulo { font-size: 11px; font-weight: bold; color: #cc5e00; text-transform: uppercase; margin-bottom: 8px; }
 .strike-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
 .strike-dot { width: 18px; height: 18px; border-radius: 50%; background: #C00000; display: inline-block; }
 .strike-dot.vacio { background: #ddd; }
@@ -185,20 +232,32 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
   font-weight: bold; cursor: pointer; margin-bottom: 10px;
 }
 .btn-levantar:hover { background: #264984; }
-
 .btn-pdf {
   width: 100%; padding: 14px; background: #ff7300; color: white;
   border: none; border-radius: 14px; font-size: 14px;
   font-weight: bold; cursor: pointer; margin-bottom: 10px;
 }
 .btn-pdf:hover { background: #e06500; }
-
 .btn-volver-abajo {
   width: 100%; padding: 13px; background: #C00000; color: white;
   border: none; border-radius: 14px; font-size: 13px;
   text-align: center; cursor: pointer; font-weight: bold; margin-bottom: 10px;
 }
 .btn-volver-abajo:hover { background: #a00000; }
+
+/* ══ VISOR FOTO AMPLIADA ══ */
+#visor-foto {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.92); z-index: 2000;
+  flex-direction: column; align-items: center; justify-content: center;
+}
+#visor-foto.visible { display: flex; }
+#visor-foto img { max-width: 95%; max-height: 85vh; border-radius: 8px; object-fit: contain; }
+.visor-foto-cerrar {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(255,255,255,0.2); color: white; border: none;
+  border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: bold; cursor: pointer;
+}
 
 /* ══ TOAST ══ */
 #toast {
@@ -216,8 +275,7 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
 #pdf-overlay {
   display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.7); z-index: 1000;
-  flex-direction: column; align-items: center; justify-content: flex-start;
-  padding: 16px;
+  flex-direction: column; align-items: center; justify-content: flex-start; padding: 16px;
 }
 #pdf-overlay.visible { display: flex; }
 .pdf-toolbar {
@@ -226,14 +284,11 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
   background: #1f3055; padding: 12px 16px; border-radius: 12px 12px 0 0;
 }
 .pdf-toolbar span { color: white; font-size: 14px; font-weight: bold; }
-.pdf-close {
-  background: #C00000; color: white; border: none; border-radius: 8px;
-  padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer;
-}
+.pdf-close { background: #C00000; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; }
 #pdf-frame {
   width: 100%; max-width: 420px; flex: 1;
   background: white; border-radius: 0 0 12px 12px;
-  overflow-y: auto; padding: 24px; max-height: calc(100vh - 100px);
+  overflow-y: auto; padding: 20px; max-height: calc(100vh - 100px);
 }
 </style>
 </head>
@@ -241,7 +296,13 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
 
 <div id="toast"></div>
 
-<!-- PDF OVERLAY (en lugar de ventana emergente) -->
+<!-- VISOR FOTO AMPLIADA -->
+<div id="visor-foto">
+  <button class="visor-foto-cerrar" onclick="cerrarVisorFoto()">✕ Cerrar</button>
+  <img id="visor-foto-img" src="" alt="Foto ampliada">
+</div>
+
+<!-- PDF OVERLAY -->
 <div id="pdf-overlay">
   <div class="pdf-toolbar">
     <span>📄 Reporte PDF</span>
@@ -318,6 +379,19 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
         <label>Descripción detallada</label>
         <textarea id="f-descripcion" placeholder="Describe el problema con el mayor detalle posible..."></textarea>
       </div>
+
+      <!-- FOTO OBLIGATORIA -->
+      <div class="form-group">
+        <label>Foto del problema <span style="color:#ff7300">*</span></label>
+        <input type="file" id="f-foto-input" accept="image/*" capture="environment" onchange="previsualizarFoto(this,'f-foto-preview','f-foto-area')">
+        <div class="foto-upload-area" id="f-foto-area" onclick="document.getElementById('f-foto-input').click()">
+          <div class="foto-upload-icon">📷</div>
+          <div class="foto-upload-texto">Toca para tomar o seleccionar foto</div>
+          <div class="foto-label-requerida">Requerida para enviar el reporte</div>
+        </div>
+        <img class="foto-preview" id="f-foto-preview" alt="Vista previa">
+      </div>
+
       <button class="btn-enviar" id="btn-enviar" onclick="enviarReporte()">ENVIAR REPORTE</button>
       <div class="form-msg" id="form-msg"></div>
     </div>
@@ -333,63 +407,68 @@ body { font-family: Arial, sans-serif; background: #202b3d; min-height: 100vh; }
   </div>
   <div class="detalle-body">
     <div class="detalle-grid">
-      <div class="detalle-box">
-        <div class="detalle-label">Área</div>
-        <div class="detalle-valor" id="d-area"></div>
-      </div>
-      <div class="detalle-box">
-        <div class="detalle-label">Fecha</div>
-        <div class="detalle-valor" id="d-fecha"></div>
-      </div>
+      <div class="detalle-box"><div class="detalle-label">Área</div><div class="detalle-valor" id="d-area"></div></div>
+      <div class="detalle-box"><div class="detalle-label">Fecha</div><div class="detalle-valor" id="d-fecha"></div></div>
     </div>
     <div class="detalle-box" style="margin-bottom:12px">
-      <div class="detalle-label">Equipo</div>
-      <div class="detalle-valor" id="d-equipo"></div>
+      <div class="detalle-label">Equipo</div><div class="detalle-valor" id="d-equipo"></div>
     </div>
     <div class="detalle-box" style="margin-bottom:12px">
-      <div class="detalle-label">Tipo de problema</div>
-      <div class="detalle-valor" id="d-problema"></div>
+      <div class="detalle-label">Tipo de problema</div><div class="detalle-valor" id="d-problema"></div>
     </div>
     <div class="detalle-descripcion">
-      <div class="detalle-label">Descripción</div>
-      <p id="d-descripcion"></p>
+      <div class="detalle-label">Descripción</div><p id="d-descripcion"></p>
     </div>
     <div class="detalle-box" style="margin-bottom:12px">
-      <div class="detalle-label">Reportado por</div>
-      <div class="detalle-valor" id="d-nombre"></div>
+      <div class="detalle-label">Reportado por</div><div class="detalle-valor" id="d-nombre"></div>
     </div>
+
+    <!-- FOTOS ANTES / DESPUÉS -->
+    <div class="fotos-section" id="fotos-section"></div>
+
+    <!-- INFO LEVANTADO -->
     <div id="div-levantado-info" style="display:none;" class="detalle-box">
       <div class="detalle-label">Levantado por</div>
       <div class="detalle-valor" id="d-levantado-por"></div>
       <div class="detalle-label" style="margin-top:6px">Fecha levantamiento</div>
       <div class="detalle-valor" id="d-fecha-levantado"></div>
     </div>
+
+    <!-- STRIKES -->
     <div class="strikes-section">
       <div class="strikes-titulo">⚠ Strikes — Problema sin resolver</div>
       <div class="strike-bar" id="strike-bar"></div>
       <div style="font-size:11px;color:#888;margin-bottom:8px;" id="strike-texto"></div>
       <button class="btn-strike" id="btn-strike" onclick="darStrike()">+ Agregar Strike</button>
     </div>
+
+    <!-- LEVANTAR (supervisores) -->
     <div id="div-levantar" style="display:none;">
+      <!-- Foto opcional al levantar -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+          📷 Foto de solución <span style="color:#888;">(opcional)</span>
+        </div>
+        <input type="file" id="l-foto-input" accept="image/*" capture="environment" onchange="previsualizarFoto(this,'l-foto-preview','l-foto-area')">
+        <div class="foto-levantar-area" id="l-foto-area" onclick="document.getElementById('l-foto-input').click()">
+          <div style="font-size:24px;margin-bottom:4px;">📷</div>
+          <div style="color:#aaa;font-size:12px;">Toca para agregar foto de la solución</div>
+        </div>
+        <img class="foto-levantar-preview" id="l-foto-preview" alt="Foto solución">
+      </div>
       <button class="btn-levantar" onclick="levantarReporte()">✅ MARCAR COMO LEVANTADO</button>
     </div>
+
     <button class="btn-pdf" onclick="generarPDF()">📄 DESCARGAR PDF</button>
     <button class="btn-volver-abajo" onclick="volverALista()">← Volver a lista</button>
   </div>
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVxH93XxX9FDxGBbzY4safgCXYmyxT482Vvch2RbsOon0oMEkXqMoilCL-jDcqeQwS2w/exec";
-const SHEETS_ID  = "1FoN-S-KOjs1vRuekQktGnX17_2pduM9ZjhDG3g8t5ZM";
-const PIN_SUPER  = "2002";
+const SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbxVxH93XxX9FDxGBbzY4safgCXYmyxT482Vvch2RbsOon0oMEkXqMoilCL-jDcqeQwS2w/exec";
+const SHEETS_ID   = "1FoN-S-KOjs1vRuekQktGnX17_2pduM9ZjhDG3g8t5ZM";
+const PIN_SUPER   = "2002";
 const PIN_MAESTRO = "0000";
-
-/* ══ MAPEO EXACTO DE COLUMNAS DEL SHEET ══
-   Sheets -> objeto JS
-   ID, DNI, NOMBRE, AREA, EQUIPO, PROBLEMA, DESCRIPCION,
-   FECHA, ESTADO, FECHA_LEVANTADO, LEVANTADO_POR  (1_Reportes)
-   ID_REPORTE, DNI, NOMBRE, FECHA               (2_Strikes)
-*/
 
 let usuarioActual = null;
 let esSuper       = false;
@@ -397,6 +476,8 @@ let colaboradores = [];
 let todosReportes = [];
 let todosStrikes  = [];
 let reporteActual = null;
+let fotoReporteB64 = null;   // base64 foto problema
+let fotoLevantarB64 = null;  // base64 foto solución
 
 /* ══ TOAST ══ */
 function mostrarToast(msg, tipo = "ok", ms = 2800) {
@@ -407,7 +488,7 @@ function mostrarToast(msg, tipo = "ok", ms = 2800) {
   t._timer = setTimeout(() => { t.className = ""; }, ms);
 }
 
-/* ══ SESIÓN PERSISTENTE ══ */
+/* ══ SESIÓN ══ */
 function guardarSesion() {
   sessionStorage.setItem("r360_usuario", JSON.stringify(usuarioActual));
   sessionStorage.setItem("r360_esSuper", esSuper ? "1" : "0");
@@ -415,16 +496,58 @@ function guardarSesion() {
 function recuperarSesion() {
   const u = sessionStorage.getItem("r360_usuario");
   const s = sessionStorage.getItem("r360_esSuper");
-  if (u) {
-    usuarioActual = JSON.parse(u);
-    esSuper = s === "1";
-    return true;
-  }
+  if (u) { usuarioActual = JSON.parse(u); esSuper = s === "1"; return true; }
   return false;
 }
 function limpiarSesion() {
   sessionStorage.removeItem("r360_usuario");
   sessionStorage.removeItem("r360_esSuper");
+}
+
+/* ══ FOTO — previsualización y compresión ══ */
+function previsualizarFoto(input, previewId, areaId) {
+  const file = input.files[0];
+  if (!file) return;
+  comprimirFoto(file, (b64) => {
+    const preview = document.getElementById(previewId);
+    const area    = document.getElementById(areaId);
+    preview.src = b64;
+    preview.classList.add("visible");
+    area.classList.add("tiene-foto");
+    area.style.padding = "8px";
+    // Guarda en variable correcta
+    if (input.id === "f-foto-input")  fotoReporteB64  = b64;
+    if (input.id === "l-foto-input")  fotoLevantarB64 = b64;
+  });
+}
+
+function comprimirFoto(file, callback) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const MAX = 1024;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL("image/jpeg", 0.75));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ══ VISOR FOTO ══ */
+function verFotoAmpliada(url) {
+  document.getElementById("visor-foto-img").src = url;
+  document.getElementById("visor-foto").classList.add("visible");
+}
+function cerrarVisorFoto() {
+  document.getElementById("visor-foto").classList.remove("visible");
+  document.getElementById("visor-foto-img").src = "";
 }
 
 /* ══ CARGA INICIAL ══ */
@@ -433,13 +556,7 @@ async function cargarDatos() {
     const res  = await fetch(`https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:csv&sheet=1_Colaboradores`);
     const text = await res.text();
     colaboradores = parseCSV(text);
-
-    /* Intenta recuperar sesión activa */
-    if (recuperarSesion()) {
-      mostrarMain();
-      return;
-    }
-
+    if (recuperarSesion()) { mostrarMain(); return; }
     document.getElementById("pantalla-carga").style.display = "none";
     document.getElementById("pantalla-pin").style.display   = "flex";
   } catch(e) {
@@ -448,70 +565,49 @@ async function cargarDatos() {
 }
 
 function mostrarMain() {
-  document.getElementById("pantalla-carga").style.display  = "none";
-  document.getElementById("pantalla-pin").style.display    = "none";
-  document.getElementById("pantalla-main").style.display   = "block";
+  document.getElementById("pantalla-carga").style.display   = "none";
+  document.getElementById("pantalla-pin").style.display     = "none";
+  document.getElementById("pantalla-main").style.display    = "block";
   document.getElementById("pantalla-detalle").style.display = "none";
   document.getElementById("main-user").textContent =
-    usuarioActual.NOMBRE + " · " + (usuarioActual.CARGO || usuarioActual.Cargo || "OPERADOR");
+    (usuarioActual.NOMBRE || usuarioActual.Nombre || "") + " · " +
+    (usuarioActual.CARGO  || usuarioActual.Cargo  || "OPERADOR");
   cargarReportes();
 }
 
 function parseCSV(text) {
-  const lines   = text.trim().split("\n");
+  const lines = text.trim().split("\n");
   const headers = parseLine(lines[0]);
   return lines.slice(1).map(line => {
     const vals = parseLine(line);
     const obj  = {};
-    headers.forEach((h, i) => obj[h.trim().replace(/"/g,"")] = (vals[i] || "").trim().replace(/"/g,""));
+    headers.forEach((h, i) => obj[h.trim().replace(/"/g,"")] = (vals[i]||"").trim().replace(/"/g,""));
     return obj;
   });
 }
 function parseLine(line) {
-  const result = [];
-  let cur = "", inQ = false;
+  const result = []; let cur = "", inQ = false;
   for (let i = 0; i < line.length; i++) {
     const c = line[i];
-    if (c === '"') { inQ = !inQ; }
-    else if (c === ',' && !inQ) { result.push(cur); cur = ""; }
-    else { cur += c; }
+    if (c==='"') { inQ=!inQ; }
+    else if (c===',' && !inQ) { result.push(cur); cur=""; }
+    else { cur+=c; }
   }
-  result.push(cur);
-  return result;
+  result.push(cur); return result;
 }
-const dniLimpio = (d) => String(parseInt(d || "0"));
+const dniLimpio = (d) => String(parseInt(d||"0"));
 
 /* ══ PIN ══ */
 function verificarPin() {
   const pin = document.getElementById("input-pin").value.trim();
   document.getElementById("pin-error").style.display = "none";
-
   if (pin === PIN_MAESTRO || pin === PIN_SUPER) {
     esSuper = true;
-    usuarioActual = {
-      DNI: "0000",
-      NOMBRE: pin === PIN_MAESTRO ? "ADMINISTRADOR" : "SUPERVISOR",
-      CARGO: "SUPERVISIÓN"
-    };
-    guardarSesion();
-    mostrarMain();
-    return;
+    usuarioActual = { DNI:"0000", NOMBRE: pin===PIN_MAESTRO?"ADMINISTRADOR":"SUPERVISOR", CARGO:"SUPERVISIÓN" };
+    guardarSesion(); mostrarMain(); return;
   }
-
-  /* Busca en colaboradores — el Sheet tiene columnas DNI, NOMBRE, CARGO */
-  const op = colaboradores.find(c => {
-    const dni = dniLimpio(c.DNI);
-    return dni.startsWith(pin) && pin.length === 4;
-  });
-
-  if (op) {
-    esSuper = false;
-    usuarioActual = op;
-    guardarSesion();
-    mostrarMain();
-    return;
-  }
-
+  const op = colaboradores.find(c => dniLimpio(c.DNI).startsWith(pin) && pin.length===4);
+  if (op) { esSuper=false; usuarioActual=op; guardarSesion(); mostrarMain(); return; }
   const e = document.getElementById("pin-error");
   e.textContent = "PIN incorrecto. Intenta nuevamente.";
   e.style.display = "block";
@@ -525,15 +621,10 @@ async function cargarReportes() {
       fetch(SCRIPT_URL + "?accion=getReportes"),
       fetch(SCRIPT_URL + "?accion=getStrikes")
     ]);
-    const rText = await rRes.text();
-    const sText = await sRes.text();
-
-    try { todosReportes = JSON.parse(rText); } catch(e) { todosReportes = []; }
-    try { todosStrikes  = JSON.parse(sText);  } catch(e) { todosStrikes  = []; }
-
-    if (!Array.isArray(todosReportes)) todosReportes = [];
-    if (!Array.isArray(todosStrikes))  todosStrikes  = [];
-
+    try { todosReportes = JSON.parse(await rRes.text()); } catch(e) { todosReportes=[]; }
+    try { todosStrikes  = JSON.parse(await sRes.text()); } catch(e) { todosStrikes=[]; }
+    if (!Array.isArray(todosReportes)) todosReportes=[];
+    if (!Array.isArray(todosStrikes))  todosStrikes=[];
     renderListaReportes();
   } catch(e) {
     document.getElementById("lista-reportes").innerHTML = '<p class="sin-datos">Error al cargar reportes.</p>';
@@ -543,36 +634,27 @@ async function cargarReportes() {
 function renderListaReportes() {
   const el = document.getElementById("lista-reportes");
   el.innerHTML = "";
-
-  let lista = esSuper
-    ? todosReportes
-    : todosReportes.filter(r => dniLimpio(r.DNI) === dniLimpio(usuarioActual.DNI));
-
-  if (lista.length === 0) {
-    el.innerHTML = '<p class="sin-datos">No hay reportes aún.</p>';
-    return;
-  }
-
+  let lista = esSuper ? todosReportes : todosReportes.filter(r => dniLimpio(r.DNI)===dniLimpio(usuarioActual.DNI));
+  if (lista.length===0) { el.innerHTML='<p class="sin-datos">No hay reportes aún.</p>'; return; }
   lista = lista.slice().reverse();
-
   lista.forEach(r => {
-    /* MAPEO CORRECTO: columnas en MAYÚSCULAS tal como están en el Sheet */
-    const strikes = todosStrikes.filter(s => s.ID_REPORTE === r.ID).length;
+    const strikes = todosStrikes.filter(s => s.ID_REPORTE===r.ID).length;
+    const tieneFoto = r.FOTO_PROBLEMA && r.FOTO_PROBLEMA.trim();
     const div = document.createElement("div");
-    div.className = "reporte-item" + (r.ESTADO === "LEVANTADO" ? " levantado" : "");
+    div.className = "reporte-item" + (r.ESTADO==="LEVANTADO"?" levantado":"");
     div.onclick   = () => abrirDetalle(r);
     div.innerHTML = `
       <div class="rep-header">
         <div>
-          <div class="rep-area">${r.AREA || "—"}</div>
-          <div class="rep-equipo">${r.EQUIPO || "—"}</div>
-          <div class="rep-problema">${r.PROBLEMA || "—"}</div>
+          <div class="rep-area">${r.AREA||"—"}</div>
+          <div class="rep-equipo">${r.EQUIPO||"—"}</div>
+          <div class="rep-problema">${r.PROBLEMA||"—"}</div>
         </div>
-        <span class="badge-estado badge-${r.ESTADO || 'PENDIENTE'}">${r.ESTADO || 'PENDIENTE'}</span>
+        <span class="badge-estado badge-${r.ESTADO||'PENDIENTE'}">${r.ESTADO||'PENDIENTE'}</span>
       </div>
       <div class="rep-footer">
-        <div class="rep-fecha">📅 ${r.FECHA || "—"} · ${r.NOMBRE || "—"}</div>
-        ${strikes > 0 ? `<div class="strikes-count">⚠ ${strikes} strike${strikes > 1 ? "s" : ""}</div>` : ""}
+        <div class="rep-fecha">📅 ${r.FECHA||"—"} · ${r.NOMBRE||"—"} ${tieneFoto?'📷':''}</div>
+        ${strikes>0?`<div class="strikes-count">⚠ ${strikes} strike${strikes>1?"s":""}</div>`:""}
       </div>
     `;
     el.appendChild(div);
@@ -587,189 +669,231 @@ async function enviarReporte() {
   const descripcion = document.getElementById("f-descripcion").value.trim();
   const msg         = document.getElementById("form-msg");
 
-  if (!area || !equipo || !problema || !descripcion) {
-    msg.textContent = "Por favor completa todos los campos.";
-    msg.className = "form-msg err"; msg.style.display = "block"; return;
+  if (!area||!equipo||!problema||!descripcion) {
+    msg.textContent="Por favor completa todos los campos.";
+    msg.className="form-msg err"; msg.style.display="block"; return;
+  }
+  if (!fotoReporteB64) {
+    msg.textContent="📷 La foto del problema es obligatoria.";
+    msg.className="form-msg err"; msg.style.display="block"; return;
   }
 
   const btn = document.getElementById("btn-enviar");
-  btn.disabled = true; btn.textContent = "Enviando...";
-  msg.style.display = "none";
+  btn.disabled=true; btn.textContent="Enviando...";
+  msg.style.display="none";
 
   const payload = JSON.stringify({
-    accion: "nuevoReporte",
-    dni:    dniLimpio(usuarioActual.DNI),
-    nombre: usuarioActual.NOMBRE || usuarioActual.Nombre || "",
-    area, equipo, problema, descripcion
+    accion:"nuevoReporte",
+    dni:   dniLimpio(usuarioActual.DNI),
+    nombre: usuarioActual.NOMBRE||usuarioActual.Nombre||"",
+    area, equipo, problema, descripcion,
+    foto: fotoReporteB64
   });
 
   try {
     const res = await fetch(SCRIPT_URL, {
-      method: "POST", redirect: "follow",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      method:"POST", redirect:"follow",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: payload
     });
-    const text = await res.text();
-    let data; try { data = JSON.parse(text); } catch(e) { data = { ok: false }; }
-
+    let data; try { data=JSON.parse(await res.text()); } catch(e){ data={ok:false}; }
     if (data.ok) {
-      msg.textContent = "✅ Reporte enviado correctamente.";
-      msg.className = "form-msg ok"; msg.style.display = "block";
-      document.getElementById("f-area").value = "";
-      document.getElementById("f-equipo").value = "";
-      document.getElementById("f-problema").value = "";
-      document.getElementById("f-descripcion").value = "";
-      mostrarToast("✅ Guardado en Sheets", "ok");
+      msg.textContent="✅ Reporte enviado correctamente.";
+      msg.className="form-msg ok"; msg.style.display="block";
+      limpiarFormulario();
+      mostrarToast("✅ Guardado en Sheets","ok");
       await cargarReportes();
-      setTimeout(() => { cambiarMainTab(0); }, 1200);
+      setTimeout(()=>{ cambiarMainTab(0); },1200);
     } else { throw new Error(); }
   } catch(e) {
-    msg.textContent = "⚠ Verificando envío...";
-    msg.className = "form-msg ok"; msg.style.display = "block";
-    setTimeout(async () => {
+    msg.textContent="⚠ Verificando envío...";
+    msg.className="form-msg ok"; msg.style.display="block";
+    setTimeout(async()=>{
       await cargarReportes();
-      msg.style.display = "none";
-      mostrarToast("✅ Reporte enviado", "ok");
-      document.getElementById("f-area").value = "";
-      document.getElementById("f-equipo").value = "";
-      document.getElementById("f-problema").value = "";
-      document.getElementById("f-descripcion").value = "";
-      setTimeout(() => { cambiarMainTab(0); }, 800);
-    }, 2000);
+      msg.style.display="none";
+      mostrarToast("✅ Reporte enviado","ok");
+      limpiarFormulario();
+      setTimeout(()=>{ cambiarMainTab(0); },800);
+    },2500);
   }
-  btn.disabled = false; btn.textContent = "ENVIAR REPORTE";
+  btn.disabled=false; btn.textContent="ENVIAR REPORTE";
+}
+
+function limpiarFormulario() {
+  document.getElementById("f-area").value="";
+  document.getElementById("f-equipo").value="";
+  document.getElementById("f-problema").value="";
+  document.getElementById("f-descripcion").value="";
+  document.getElementById("f-foto-input").value="";
+  const prev = document.getElementById("f-foto-preview");
+  prev.src=""; prev.classList.remove("visible");
+  const area = document.getElementById("f-foto-area");
+  area.classList.remove("tiene-foto"); area.style.padding="";
+  fotoReporteB64=null;
 }
 
 /* ══ DETALLE ══ */
 function abrirDetalle(r) {
-  reporteActual = r;
-  /* MAPEO CORRECTO con columnas en MAYÚSCULAS */
-  const strikes = todosStrikes.filter(s => s.ID_REPORTE === r.ID);
+  reporteActual=r;
+  fotoLevantarB64=null;
+  const strikes = todosStrikes.filter(s=>s.ID_REPORTE===r.ID);
 
-  document.getElementById("pantalla-main").style.display    = "none";
-  document.getElementById("pantalla-detalle").style.display = "block";
+  document.getElementById("pantalla-main").style.display    ="none";
+  document.getElementById("pantalla-detalle").style.display ="block";
   window.scrollTo(0,0);
 
-  document.getElementById("detalle-titulo").textContent = r.ID || "Reporte";
-  document.getElementById("d-area").textContent         = r.AREA || "—";
-  document.getElementById("d-fecha").textContent        = r.FECHA || "—";
-  document.getElementById("d-equipo").textContent       = r.EQUIPO || "—";
-  document.getElementById("d-problema").textContent     = r.PROBLEMA || "—";
-  document.getElementById("d-descripcion").textContent  = r.DESCRIPCION || "—";
-  document.getElementById("d-nombre").textContent       = (r.NOMBRE || "—") + " · DNI: " + (r.DNI || "—");
+  document.getElementById("detalle-titulo").textContent = r.ID||"Reporte";
+  document.getElementById("d-area").textContent         = r.AREA||"—";
+  document.getElementById("d-fecha").textContent        = r.FECHA||"—";
+  document.getElementById("d-equipo").textContent       = r.EQUIPO||"—";
+  document.getElementById("d-problema").textContent     = r.PROBLEMA||"—";
+  document.getElementById("d-descripcion").textContent  = r.DESCRIPCION||"—";
+  document.getElementById("d-nombre").textContent       = (r.NOMBRE||"—")+" · DNI: "+(r.DNI||"—");
 
   const badge = document.getElementById("detalle-badge");
-  badge.textContent = r.ESTADO || "PENDIENTE";
-  badge.className   = "badge-estado badge-" + (r.ESTADO || "PENDIENTE");
+  badge.textContent = r.ESTADO||"PENDIENTE";
+  badge.className   = "badge-estado badge-"+(r.ESTADO||"PENDIENTE");
 
-  /* Info levantado */
-  const divLev = document.getElementById("div-levantado-info");
-  if (r.ESTADO === "LEVANTADO") {
-    divLev.style.display = "block";
-    document.getElementById("d-levantado-por").textContent   = r.LEVANTADO_POR   || "—";
-    document.getElementById("d-fecha-levantado").textContent = r.FECHA_LEVANTADO || "—";
-  } else {
-    divLev.style.display = "none";
+  /* Fotos antes/después */
+  const fotosEl = document.getElementById("fotos-section");
+  fotosEl.innerHTML="";
+  const hayAntes   = r.FOTO_PROBLEMA   && r.FOTO_PROBLEMA.trim();
+  const hayDespues = r.FOTO_LEVANTADO  && r.FOTO_LEVANTADO.trim();
+  if (hayAntes || hayDespues) {
+    if (hayAntes) {
+      fotosEl.innerHTML += `
+        <div class="foto-card">
+          <div class="foto-card-label antes">📷 Antes</div>
+          <img src="${r.FOTO_PROBLEMA}" alt="Foto problema" onclick="verFotoAmpliada('${r.FOTO_PROBLEMA}')">
+        </div>`;
+    }
+    if (hayDespues) {
+      fotosEl.innerHTML += `
+        <div class="foto-card">
+          <div class="foto-card-label despues">✅ Después</div>
+          <img src="${r.FOTO_LEVANTADO}" alt="Foto solución" onclick="verFotoAmpliada('${r.FOTO_LEVANTADO}')">
+        </div>`;
+    } else if (hayAntes) {
+      fotosEl.innerHTML += `
+        <div class="foto-card">
+          <div class="foto-card-label despues">✅ Después</div>
+          <div class="foto-card-vacia">Sin foto<br>de solución</div>
+        </div>`;
+    }
   }
+
+  /* Levantado info */
+  const divLev = document.getElementById("div-levantado-info");
+  if (r.ESTADO==="LEVANTADO") {
+    divLev.style.display="block";
+    document.getElementById("d-levantado-por").textContent   = r.LEVANTADO_POR||"—";
+    document.getElementById("d-fecha-levantado").textContent = r.FECHA_LEVANTADO||"—";
+  } else { divLev.style.display="none"; }
 
   /* Strikes */
   const bar = document.getElementById("strike-bar");
-  bar.innerHTML = "";
-  for (let i = 0; i < 20; i++) {
-    const dot = document.createElement("span");
-    dot.className = "strike-dot" + (i < strikes.length ? "" : " vacio");
+  bar.innerHTML="";
+  for (let i=0;i<20;i++) {
+    const dot=document.createElement("span");
+    dot.className="strike-dot"+(i<strikes.length?"":" vacio");
     bar.appendChild(dot);
   }
-  document.getElementById("strike-texto").textContent = `${strikes.length}/20 strikes`;
+  document.getElementById("strike-texto").textContent=`${strikes.length}/20 strikes`;
 
   const btnStrike    = document.getElementById("btn-strike");
-  const yaHizoStrike = strikes.some(s => dniLimpio(s.DNI) === dniLimpio(usuarioActual.DNI));
-  const esPropio     = dniLimpio(r.DNI) === dniLimpio(usuarioActual.DNI);
-  const diffHoras    = (new Date() - new Date(r.FECHA)) / 3600000;
-  const puedeStrike  = !esPropio && diffHoras >= 24 && !yaHizoStrike && r.ESTADO !== "LEVANTADO" && strikes.length < 20;
-
+  const yaHizoStrike = strikes.some(s=>dniLimpio(s.DNI)===dniLimpio(usuarioActual.DNI));
+  const esPropio     = dniLimpio(r.DNI)===dniLimpio(usuarioActual.DNI);
+  const diffHoras    = (new Date()-new Date(r.FECHA))/3600000;
+  const puedeStrike  = !esPropio&&diffHoras>=24&&!yaHizoStrike&&r.ESTADO!=="LEVANTADO"&&strikes.length<20;
   btnStrike.disabled = !puedeStrike;
-  btnStrike.title = !puedeStrike
-    ? (r.ESTADO === "LEVANTADO" ? "Ya fue levantado"
-      : yaHizoStrike ? "Ya diste strike"
-      : esPropio ? "No puedes darte strike a ti mismo"
-      : "Disponible después de 24h") : "";
+
+  /* Reset foto levantar */
+  const lPrev = document.getElementById("l-foto-preview");
+  lPrev.src=""; lPrev.classList.remove("visible");
+  const lArea = document.getElementById("l-foto-area");
+  lArea.classList.remove("tiene-foto");
+  document.getElementById("l-foto-input").value="";
 
   document.getElementById("div-levantar").style.display =
-    (esSuper && r.ESTADO !== "LEVANTADO") ? "block" : "none";
+    (esSuper&&r.ESTADO!=="LEVANTADO")?"block":"none";
 }
 
 function volverALista() {
-  document.getElementById("pantalla-detalle").style.display = "none";
-  document.getElementById("pantalla-main").style.display    = "block";
-  reporteActual = null;
+  document.getElementById("pantalla-detalle").style.display="none";
+  document.getElementById("pantalla-main").style.display   ="block";
+  reporteActual=null; fotoLevantarB64=null;
   window.scrollTo(0,0);
 }
 
 /* ══ STRIKES ══ */
 async function darStrike() {
   if (!reporteActual) return;
-  const btn = document.getElementById("btn-strike");
-  btn.disabled = true; btn.textContent = "Guardando...";
-
-  const payload = JSON.stringify({
-    accion:     "nuevoStrike",
-    id_reporte: reporteActual.ID,
-    dni:        dniLimpio(usuarioActual.DNI),
-    nombre:     usuarioActual.NOMBRE || usuarioActual.Nombre || ""
-  });
-
+  const btn=document.getElementById("btn-strike");
+  btn.disabled=true; btn.textContent="Guardando...";
   try {
-    await fetch(SCRIPT_URL, {
-      method: "POST", redirect: "follow",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: payload
+    await fetch(SCRIPT_URL,{
+      method:"POST",redirect:"follow",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({accion:"nuevoStrike",id_reporte:reporteActual.ID,
+        dni:dniLimpio(usuarioActual.DNI),nombre:usuarioActual.NOMBRE||""})
     });
-    setTimeout(async () => {
+    setTimeout(async()=>{
       await cargarReportes();
-      const r = todosReportes.find(x => x.ID === reporteActual.ID);
-      if (r) abrirDetalle(r);
-      mostrarToast("⚠ Strike registrado", "ok");
-    }, 1500);
-  } catch(e) {
-    btn.disabled = false; btn.textContent = "+ Agregar Strike";
-    mostrarToast("Error al registrar strike", "err");
-  }
+      const r=todosReportes.find(x=>x.ID===reporteActual.ID);
+      if(r) abrirDetalle(r);
+      mostrarToast("⚠ Strike registrado","ok");
+    },1500);
+  } catch(e) { btn.disabled=false; btn.textContent="+ Agregar Strike"; mostrarToast("Error","err"); }
 }
 
 /* ══ LEVANTAR ══ */
 async function levantarReporte() {
-  if (!reporteActual || !esSuper) return;
+  if (!reporteActual||!esSuper) return;
   if (!confirm("¿Confirmas que este problema fue resuelto?")) return;
-
-  const payload = JSON.stringify({
-    accion:     "levantarReporte",
-    id_reporte: reporteActual.ID,
-    nombre:     usuarioActual.NOMBRE || usuarioActual.Nombre || ""
-  });
-
   try {
-    await fetch(SCRIPT_URL, {
-      method: "POST", redirect: "follow",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: payload
+    await fetch(SCRIPT_URL,{
+      method:"POST",redirect:"follow",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({
+        accion:"levantarReporte",
+        id_reporte:reporteActual.ID,
+        nombre:usuarioActual.NOMBRE||"",
+        foto: fotoLevantarB64||null
+      })
     });
-    setTimeout(async () => {
+    setTimeout(async()=>{
       await cargarReportes();
-      const r = todosReportes.find(x => x.ID === reporteActual.ID);
-      if (r) abrirDetalle(r);
-      mostrarToast("✅ Reporte levantado", "ok");
-    }, 1500);
-  } catch(e) {
-    mostrarToast("Error al levantar el reporte", "err");
-  }
+      const r=todosReportes.find(x=>x.ID===reporteActual.ID);
+      if(r) abrirDetalle(r);
+      mostrarToast("✅ Reporte levantado","ok");
+    },1500);
+  } catch(e) { mostrarToast("Error al levantar","err"); }
 }
 
-/* ══ PDF — ahora dentro de la misma página ══ */
+/* ══ PDF ══ */
 function generarPDF() {
   if (!reporteActual) return;
-  const r       = reporteActual;
-  const strikes = todosStrikes.filter(s => s.ID_REPORTE === r.ID).length;
+  const r = reporteActual;
+  const strikes = todosStrikes.filter(s=>s.ID_REPORTE===r.ID).length;
+  const hayAntes   = r.FOTO_PROBLEMA  && r.FOTO_PROBLEMA.trim();
+  const hayDespues = r.FOTO_LEVANTADO && r.FOTO_LEVANTADO.trim();
+
+  const fotosHTML = (hayAntes||hayDespues) ? `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:10px;color:#888;text-transform:uppercase;font-weight:bold;margin-bottom:8px;">Evidencia fotográfica</div>
+      <div style="display:grid;grid-template-columns:${hayAntes&&hayDespues?'1fr 1fr':'1fr'};gap:12px;">
+        ${hayAntes?`
+        <div>
+          <div style="font-size:10px;font-weight:bold;background:#FFF2CC;color:#7F5B00;padding:4px 8px;border-radius:4px 4px 0 0;">📷 ANTES — Problema</div>
+          <img src="${r.FOTO_PROBLEMA}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #ddd;border-top:none;border-radius:0 0 4px 4px;">
+        </div>`:""}
+        ${hayDespues?`
+        <div>
+          <div style="font-size:10px;font-weight:bold;background:#E2EFDA;color:#375623;padding:4px 8px;border-radius:4px 4px 0 0;">✅ DESPUÉS — Solución</div>
+          <img src="${r.FOTO_LEVANTADO}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #ddd;border-top:none;border-radius:0 0 4px 4px;">
+        </div>`:""}
+      </div>
+    </div>` : "";
 
   const html = `
     <div style="font-family:Arial,sans-serif;color:#333;max-width:680px;margin:0 auto;">
@@ -778,7 +902,8 @@ function generarPDF() {
           <div style="font-size:18px;font-weight:bold;">Reporte 360° · Planta Óxidos</div>
           <div style="font-size:12px;opacity:0.8;margin-top:4px;">Volcán Compañía Minera S.A.A. · ${r.ID}</div>
         </div>
-        <span style="padding:6px 14px;border-radius:20px;font-weight:bold;font-size:12px;background:${r.ESTADO==='LEVANTADO'?'#E2EFDA;color:#375623':'#FFF2CC;color:#7F5B00'}">${r.ESTADO||'PENDIENTE'}</span>
+        <span style="padding:6px 14px;border-radius:20px;font-weight:bold;font-size:12px;
+          ${r.ESTADO==='LEVANTADO'?'background:#E2EFDA;color:#375623':'background:#FFF2CC;color:#7F5B00'}">${r.ESTADO||'PENDIENTE'}</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
         <div style="border:1px solid #ddd;border-radius:8px;padding:12px;">
@@ -806,15 +931,16 @@ function generarPDF() {
         <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px;">Reportado por</div>
         <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.NOMBRE||'—'} · DNI: ${r.DNI||'—'}</div>
       </div>
+      ${fotosHTML}
       <div style="background:#fff8f0;border:1px solid #ff7300;border-radius:8px;padding:14px;margin-bottom:12px;">
         <div style="font-size:10px;color:#cc5e00;text-transform:uppercase;font-weight:bold;margin-bottom:6px;">⚠ Strikes acumulados</div>
         <div style="font-size:22px;font-weight:bold;color:#C00000;">${strikes} / 20</div>
       </div>
-      ${r.ESTADO === "LEVANTADO" ? `
+      ${r.ESTADO==="LEVANTADO"?`
       <div style="border:1px solid #4CAF50;border-radius:8px;padding:14px;margin-bottom:12px;">
         <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px;">Levantado por</div>
         <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.LEVANTADO_POR||'—'} · ${r.FECHA_LEVANTADO||'—'}</div>
-      </div>` : ""}
+      </div>`:""}
       <div style="text-align:center;font-size:11px;color:#aaa;margin-top:24px;padding-top:14px;border-top:1px solid #eee;">
         Generado por Reporte 360° · Planta Óxidos · Volcán Compañía Minera S.A.A.<br>
         ${new Date().toLocaleString("es-PE")}
@@ -822,8 +948,7 @@ function generarPDF() {
       <div style="margin-top:20px;text-align:center;">
         <button onclick="window.print()" style="background:#1f3055;color:white;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:bold;cursor:pointer;">🖨 Imprimir / Guardar PDF</button>
       </div>
-    </div>
-  `;
+    </div>`;
 
   document.getElementById("pdf-frame").innerHTML = html;
   document.getElementById("pdf-overlay").classList.add("visible");
@@ -837,46 +962,28 @@ function cerrarPDF() {
 
 /* ══ UTILIDADES ══ */
 function cambiarMainTab(idx) {
-  document.querySelectorAll(".main-tab").forEach((t,i)        => t.classList.toggle("activa", i===idx));
-  document.querySelectorAll(".main-tab-content").forEach((c,i)=> c.classList.toggle("activa", i===idx));
+  document.querySelectorAll(".main-tab").forEach((t,i)        =>t.classList.toggle("activa",i===idx));
+  document.querySelectorAll(".main-tab-content").forEach((c,i)=>c.classList.toggle("activa",i===idx));
 }
-function cerrarSesion() {
-  limpiarSesion();
-  location.reload();
-}
+function cerrarSesion() { limpiarSesion(); location.reload(); }
 
-/* ══ AUTO-LOGIN desde Perfil 360 vía ?dni=XXXXXXXX ══ */
+/* ══ AUTO-LOGIN desde Perfil 360 vía ?dni= ══ */
 async function iniciarConDNI(dni) {
   try {
     const res  = await fetch(`https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:csv&sheet=1_Colaboradores`);
     const text = await res.text();
     colaboradores = parseCSV(text);
-
-    const op = colaboradores.find(c => dniLimpio(c.DNI) === dniLimpio(dni));
-    if (op) {
-      esSuper = false;
-      usuarioActual = op;
-      guardarSesion();
-      mostrarMain();
-    } else {
-      /* DNI no encontrado → pantalla normal */
-      document.getElementById("pantalla-carga").style.display = "none";
-      document.getElementById("pantalla-pin").style.display   = "flex";
-    }
-  } catch(e) {
-    document.querySelector(".carga-texto").textContent = "Error al cargar. Verifica tu conexión.";
-  }
+    const op = colaboradores.find(c => dniLimpio(c.DNI)===dniLimpio(dni));
+    if (op) { esSuper=false; usuarioActual=op; guardarSesion(); mostrarMain(); }
+    else { document.getElementById("pantalla-carga").style.display="none"; document.getElementById("pantalla-pin").style.display="flex"; }
+  } catch(e) { document.querySelector(".carga-texto").textContent="Error al cargar."; }
 }
 
-/* Detecta ?dni= en la URL al abrir la app */
 (function arrancar() {
-  const params = new URLSearchParams(window.location.search);
+  const params   = new URLSearchParams(window.location.search);
   const dniParam = params.get("dni");
-  if (dniParam) {
-    iniciarConDNI(dniParam);
-  } else {
-    cargarDatos();
-  }
+  if (dniParam) iniciarConDNI(dniParam);
+  else cargarDatos();
 })();
 </script>
 </body>
