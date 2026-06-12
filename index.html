@@ -845,7 +845,39 @@ function cerrarSesion() {
   location.reload();
 }
 
-cargarDatos();
+/* ══ AUTO-LOGIN desde Perfil 360 vía ?dni=XXXXXXXX ══ */
+async function iniciarConDNI(dni) {
+  try {
+    const res  = await fetch(`https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:csv&sheet=1_Colaboradores`);
+    const text = await res.text();
+    colaboradores = parseCSV(text);
+
+    const op = colaboradores.find(c => dniLimpio(c.DNI) === dniLimpio(dni));
+    if (op) {
+      esSuper = false;
+      usuarioActual = op;
+      guardarSesion();
+      mostrarMain();
+    } else {
+      /* DNI no encontrado → pantalla normal */
+      document.getElementById("pantalla-carga").style.display = "none";
+      document.getElementById("pantalla-pin").style.display   = "flex";
+    }
+  } catch(e) {
+    document.querySelector(".carga-texto").textContent = "Error al cargar. Verifica tu conexión.";
+  }
+}
+
+/* Detecta ?dni= en la URL al abrir la app */
+(function arrancar() {
+  const params = new URLSearchParams(window.location.search);
+  const dniParam = params.get("dni");
+  if (dniParam) {
+    iniciarConDNI(dniParam);
+  } else {
+    cargarDatos();
+  }
+})();
 </script>
 </body>
 </html>
