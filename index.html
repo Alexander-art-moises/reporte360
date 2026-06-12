@@ -465,7 +465,7 @@ input[type="file"] { display: none; }
 </div>
 
 <script>
-const SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbzhRO3nXzC_jseCZFqwe7Cb0WSrPSFIouPps2-lpZZBCazz3nwRY81R6xv9vgMiFY3PXQ/exec";
+const SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbz38ZNFIhYWd4w8QkvEdsxIQcIrT2vmJvOWVwyN3-1oyID0FJjSa7nTSYPoMnFEIGmYvQ/exec";
 const SHEETS_ID   = "1FoN-S-KOjs1vRuekQktGnX17_2pduM9ZjhDG3g8t5ZM";
 const PIN_SUPER   = "2002";
 const PIN_MAESTRO = "0000";
@@ -783,7 +783,6 @@ function abrirDetalle(r) {
   badge.textContent = r.ESTADO||"PENDIENTE";
   badge.className   = "badge-estado badge-"+(r.ESTADO||"PENDIENTE");
 
-  /* Fotos antes/después */
   const fotosEl = document.getElementById("fotos-section");
   fotosEl.innerHTML="";
   const hayAntes   = r.FOTO_PROBLEMA   && r.FOTO_PROBLEMA.trim();
@@ -793,14 +792,20 @@ function abrirDetalle(r) {
       fotosEl.innerHTML += `
         <div class="foto-card">
           <div class="foto-card-label antes">📷 Antes</div>
-          <img src="${r.FOTO_PROBLEMA}" alt="Foto problema" onclick="verFotoAmpliada('${r.FOTO_PROBLEMA}')">
+          <img src="${r.FOTO_PROBLEMA}" alt="Foto problema" referrerpolicy="no-referrer"
+               onclick="verFotoAmpliada('${r.FOTO_PROBLEMA}')"
+               onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+          <div class="foto-card-vacia" style="display:none;">No se pudo cargar la foto</div>
         </div>`;
     }
     if (hayDespues) {
       fotosEl.innerHTML += `
         <div class="foto-card">
           <div class="foto-card-label despues">✅ Después</div>
-          <img src="${r.FOTO_LEVANTADO}" alt="Foto solución" onclick="verFotoAmpliada('${r.FOTO_LEVANTADO}')">
+          <img src="${r.FOTO_LEVANTADO}" alt="Foto solución" referrerpolicy="no-referrer"
+               onclick="verFotoAmpliada('${r.FOTO_LEVANTADO}')"
+               onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+          <div class="foto-card-vacia" style="display:none;">No se pudo cargar la foto</div>
         </div>`;
     } else if (hayAntes) {
       fotosEl.innerHTML += `
@@ -998,6 +1003,8 @@ function generarPDF() {
     </div>`;
 
   document.getElementById("pdf-frame").innerHTML = html;
+  /* Ocultar pantalla detalle para que el PDF salga limpio */
+  document.getElementById("pantalla-detalle").style.display = "none";
   document.getElementById("pdf-overlay").classList.add("visible");
   document.body.style.overflow = "hidden";
 }
@@ -1005,6 +1012,8 @@ function generarPDF() {
 function cerrarPDF() {
   document.getElementById("pdf-overlay").classList.remove("visible");
   document.body.style.overflow = "";
+  /* Restaurar pantalla detalle */
+  document.getElementById("pantalla-detalle").style.display = "block";
 }
 
 /* ══ UTILIDADES ══ */
