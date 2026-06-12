@@ -466,6 +466,7 @@ input[type="file"] { display: none; }
 
 <script>
 const SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbz38ZNFIhYWd4w8QkvEdsxIQcIrT2vmJvOWVwyN3-1oyID0FJjSa7nTSYPoMnFEIGmYvQ/exec";
+const FOTO_URL    = "/api/foto";  // proxy Vercel — sin CORS
 const SHEETS_ID   = "1FoN-S-KOjs1vRuekQktGnX17_2pduM9ZjhDG3g8t5ZM";
 const PIN_SUPER   = "2002";
 const PIN_MAESTRO = "0000";
@@ -711,10 +712,9 @@ async function enviarReporte() {
 
     /* PASO 2: foto por separado con no-cors (fire and forget) */
     if (fotoReporteB64 && idGenerado) {
-      fetch(SCRIPT_URL, {
+      fetch(FOTO_URL, {
         method:"POST",
-        mode:"no-cors",
-        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
           accion:"subirFotoReporte",
           id_reporte: idGenerado,
@@ -901,10 +901,9 @@ async function levantarReporte() {
 
     /* Paso 2: foto opcional con no-cors */
     if (fotoLevantarB64) {
-      fetch(SCRIPT_URL,{
+      fetch(FOTO_URL,{
         method:"POST",
-        mode:"no-cors",
-        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
           accion:"subirFotoLevantado",
           id_reporte: idReporte,
