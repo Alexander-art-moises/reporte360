@@ -383,7 +383,7 @@ input[type="file"] { display: none; }
       <!-- FOTO OBLIGATORIA -->
       <div class="form-group">
         <label>Foto del problema <span style="color:#ff7300">*</span></label>
-        <input type="file" id="f-foto-input" accept="image/*" capture="environment" onchange="previsualizarFoto(this,'f-foto-preview','f-foto-area')">
+        <input type="file" id="f-foto-input" accept="image/*" onchange="previsualizarFoto(this,'f-foto-preview','f-foto-area')">
         <div class="foto-upload-area" id="f-foto-area" onclick="document.getElementById('f-foto-input').click()">
           <div class="foto-upload-icon">📷</div>
           <div class="foto-upload-texto">Toca para tomar o seleccionar foto</div>
@@ -449,7 +449,7 @@ input[type="file"] { display: none; }
         <div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
           📷 Foto de solución <span style="color:#888;">(opcional)</span>
         </div>
-        <input type="file" id="l-foto-input" accept="image/*" capture="environment" onchange="previsualizarFoto(this,'l-foto-preview','l-foto-area')">
+        <input type="file" id="l-foto-input" accept="image/*" onchange="previsualizarFoto(this,'l-foto-preview','l-foto-area')">
         <div class="foto-levantar-area" id="l-foto-area" onclick="document.getElementById('l-foto-input').click()">
           <div style="font-size:24px;margin-bottom:4px;">📷</div>
           <div style="color:#aaa;font-size:12px;">Toca para agregar foto de la solución</div>
@@ -511,11 +511,21 @@ function previsualizarFoto(input, previewId, areaId) {
   comprimirFoto(file, (b64) => {
     const preview = document.getElementById(previewId);
     const area    = document.getElementById(areaId);
+    /* Ocultar el área y mostrar solo la preview */
+    area.style.display = "none";
     preview.src = b64;
     preview.classList.add("visible");
-    area.classList.add("tiene-foto");
-    area.style.padding = "8px";
-    // Guarda en variable correcta
+    /* Agregar botón para cambiar foto */
+    const existeBtn = document.getElementById(areaId + "-cambiar");
+    if (!existeBtn) {
+      const btn = document.createElement("button");
+      btn.id = areaId + "-cambiar";
+      btn.type = "button";
+      btn.style.cssText = "width:100%;margin-top:6px;padding:8px;background:#2a3650;color:#aaa;border:1px dashed #354466;border-radius:8px;font-size:12px;cursor:pointer;";
+      btn.textContent = "🔄 Cambiar foto";
+      btn.onclick = () => input.click();
+      preview.parentNode.insertBefore(btn, preview.nextSibling);
+    }
     if (input.id === "f-foto-input")  fotoReporteB64  = b64;
     if (input.id === "l-foto-input")  fotoLevantarB64 = b64;
   });
@@ -679,33 +689,51 @@ async function enviarReporte() {
   }
 
   const btn = document.getElementById("btn-enviar");
-  btn.disabled=true; btn.textContent="Enviando...";
+  btn.disabled=true; btn.textContent="Enviando datos...";
   msg.style.display="none";
 
-  const payload = JSON.stringify({
-    accion:"nuevoReporte",
-    dni:   dniLimpio(usuarioActual.DNI),
-    nombre: usuarioActual.NOMBRE||usuarioActual.Nombre||"",
-    area, equipo, problema, descripcion,
-    foto: fotoReporteB64
-  });
-
   try {
-    const res = await fetch(SCRIPT_URL, {
+    /* ── PASO 1: enviar datos sin foto ── */
+    const res1 = await fetch(SCRIPT_URL, {
       method:"POST", redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: payload
+      body: JSON.stringify({
+        accion:"nuevoReporte",
+        dni:   dniLimpio(usuarioActual.DNI),
+        nombre: usuarioActual.NOMBRE||usuarioActual.Nombre||"",
+        area, equipo, problema, descripcion
+      })
     });
-    let data; try { data=JSON.parse(await res.text()); } catch(e){ data={ok:false}; }
-    if (data.ok) {
-      msg.textContent="✅ Reporte enviado correctamente.";
-      msg.className="form-msg ok"; msg.style.display="block";
-      limpiarFormulario();
-      mostrarToast("✅ Guardado en Sheets","ok");
-      await cargarReportes();
-      setTimeout(()=>{ cambiarMainTab(0); },1200);
-    } else { throw new Error(); }
+
+    let data1; 
+    try { data1 = JSON.parse(await res1.text()); } catch(e){ data1={ok:false}; }
+
+    if (!data1.ok) throw new Error("Error paso 1");
+
+    const idGenerado = data1.id;
+    btn.textContent="Subiendo foto...";
+
+    /* ── PASO 2: enviar foto por separado con el ID ── */
+    await fetch(SCRIPT_URL, {
+      method:"POST", redirect:"follow",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({
+        accion:"subirFotoReporte",
+        id_reporte: idGenerado,
+        foto: fotoReporteB64
+      })
+    });
+
+    /* Éxito */
+    msg.textContent="✅ Reporte enviado correctamente.";
+    msg.className="form-msg ok"; msg.style.display="block";
+    limpiarFormulario();
+    mostrarToast("✅ Guardado en Sheets","ok");
+    await cargarReportes();
+    setTimeout(()=>{ cambiarMainTab(0); },1200);
+
   } catch(e) {
+    /* Fallback: recarga reportes por si el paso 1 sí llegó */
     msg.textContent="⚠ Verificando envío...";
     msg.className="form-msg ok"; msg.style.display="block";
     setTimeout(async()=>{
@@ -716,6 +744,7 @@ async function enviarReporte() {
       setTimeout(()=>{ cambiarMainTab(0); },800);
     },2500);
   }
+
   btn.disabled=false; btn.textContent="ENVIAR REPORTE";
 }
 
@@ -850,23 +879,41 @@ async function darStrike() {
 async function levantarReporte() {
   if (!reporteActual||!esSuper) return;
   if (!confirm("¿Confirmas que este problema fue resuelto?")) return;
+
+  const idReporte = reporteActual.ID;
+
   try {
+    /* Paso 1: levantar sin foto */
     await fetch(SCRIPT_URL,{
-      method:"POST",redirect:"follow",
+      method:"POST", redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify({
+      body: JSON.stringify({
         accion:"levantarReporte",
-        id_reporte:reporteActual.ID,
-        nombre:usuarioActual.NOMBRE||"",
-        foto: fotoLevantarB64||null
+        id_reporte: idReporte,
+        nombre: usuarioActual.NOMBRE||""
       })
     });
+
+    /* Paso 2: subir foto si existe */
+    if (fotoLevantarB64) {
+      await fetch(SCRIPT_URL,{
+        method:"POST", redirect:"follow",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: JSON.stringify({
+          accion:"subirFotoLevantado",
+          id_reporte: idReporte,
+          foto: fotoLevantarB64
+        })
+      });
+    }
+
     setTimeout(async()=>{
       await cargarReportes();
-      const r=todosReportes.find(x=>x.ID===reporteActual.ID);
+      const r = todosReportes.find(x=>x.ID===idReporte);
       if(r) abrirDetalle(r);
       mostrarToast("✅ Reporte levantado","ok");
     },1500);
+
   } catch(e) { mostrarToast("Error al levantar","err"); }
 }
 
