@@ -694,24 +694,24 @@ async function enviarReporte() {
   msg.style.display="none";
 
   try {
-    /* PASO 1: solo datos, sin foto — ligero, siempre llega */
-    const res = await fetch(SCRIPT_URL, {
+    /* Generar ID en frontend — no dependemos de la respuesta del Apps Script */
+    const idGenerado = "R-" + Date.now();
+
+    /* PASO 1: datos con el ID ya generado */
+    fetch(SCRIPT_URL, {
       method:"POST", redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({
         accion:"nuevoReporte",
+        id: idGenerado,
         dni:   dniLimpio(usuarioActual.DNI),
         nombre: usuarioActual.NOMBRE||usuarioActual.Nombre||"",
         area, equipo, problema, descripcion
       })
-    });
+    }).catch(()=>{});
 
-    let data;
-    try { data = JSON.parse(await res.text()); } catch(e){ data={ok:true,id:null}; }
-    const idGenerado = data.id;
-
-    /* PASO 2: foto por separado con no-cors (fire and forget) */
-    if (fotoReporteB64 && idGenerado) {
+    /* PASO 2: foto via proxy — independiente del paso 1 */
+    if (fotoReporteB64) {
       fetch(FOTO_URL, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -727,11 +727,11 @@ async function enviarReporte() {
     msg.className="form-msg ok"; msg.style.display="block";
     limpiarFormulario();
     mostrarToast("✅ Guardado en Sheets","ok");
-    /* Esperamos 4s para que la foto llegue antes de recargar */
+    /* Esperamos 5s para que ambos requests lleguen antes de recargar */
     setTimeout(async()=>{
       await cargarReportes();
       cambiarMainTab(0);
-    }, 4000);
+    }, 5000);
 
   } catch(e) {
     msg.textContent="⚠ Verificando envío...";
