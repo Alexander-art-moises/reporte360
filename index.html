@@ -612,13 +612,21 @@ const dniLimpio = (d) => String(parseInt(d||"0"));
 function verificarPin() {
   const pin = document.getElementById("input-pin").value.trim();
   document.getElementById("pin-error").style.display = "none";
+
   if (pin === PIN_MAESTRO || pin === PIN_SUPER) {
     esSuper = true;
     usuarioActual = { DNI:"0000", NOMBRE: pin===PIN_MAESTRO?"ADMINISTRADOR":"SUPERVISOR", CARGO:"SUPERVISIÓN" };
     guardarSesion(); mostrarMain(); return;
   }
+
   const op = colaboradores.find(c => dniLimpio(c.DNI).startsWith(pin) && pin.length===4);
-  if (op) { esSuper=false; usuarioActual=op; guardarSesion(); mostrarMain(); return; }
+  if (op) {
+    /* Si Area1 es Supervision → acceso de supervisor */
+    esSuper = (op.Area1 || "").trim().toLowerCase() === "supervision";
+    usuarioActual = op;
+    guardarSesion(); mostrarMain(); return;
+  }
+
   const e = document.getElementById("pin-error");
   e.textContent = "PIN incorrecto. Intenta nuevamente.";
   e.style.display = "block";
@@ -1048,7 +1056,8 @@ async function iniciarConDNI(dni) {
 
     const op = colaboradores.find(c => dniLimpio(c.DNI)===dniLimpio(dni));
     if (op) {
-      esSuper=false; usuarioActual=op;
+      esSuper = (op.Area1 || "").trim().toLowerCase() === "supervision";
+      usuarioActual = op;
       guardarSesion(); mostrarMain();
       setTimeout(()=>{ cambiarMainTab(1); }, 300);
     } else {
