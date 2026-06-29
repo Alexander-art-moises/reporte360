@@ -157,6 +157,7 @@ input[type="file"] { display: none; }
 .detalle-header {
   background: #1f3055; padding: 16px 20px;
   display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 50;
 }
 .detalle-header h2 { color: white; font-size: 15px; flex: 1; }
 .detalle-body { padding: 14px; }
@@ -1056,7 +1057,10 @@ async function generarPDF() {
     <strong>⚙ Antes de imprimir:</strong>
     <p>En el diálogo de impresión → "Más configuraciones" → desactiva <strong>"Encabezados y pies de página"</strong></p>
   </div>
-  <button class="btn-imprimir" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+  <div style="display:flex;gap:8px;flex-shrink:0;">
+    <button class="btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+    <button class="btn-imprimir" onclick="window.close()" style="background:#C00000;">✕ Cerrar</button>
+  </div>
 </div>
 ${html}
 </body></html>`);
