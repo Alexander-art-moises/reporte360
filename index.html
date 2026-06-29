@@ -657,7 +657,7 @@ function renderListaReportes() {
   if (lista.length===0) { el.innerHTML='<p class="sin-datos">No hay reportes aún.</p>'; return; }
   lista = lista.slice().reverse();
   lista.forEach(r => {
-    const strikes = todosStrikes.filter(s => s.ID_REPORTE===r.ID).length;
+    const strikes = todosStrikes.filter(s => (s.ID_REPORTE||s.ID_Reporte||"")===r.ID).length;
     const tieneFoto = r.FOTO_PROBLEMA && r.FOTO_PROBLEMA.trim();
     const div = document.createElement("div");
     div.className = "reporte-item" + (r.ESTADO==="LEVANTADO"?" levantado":"");
@@ -759,7 +759,7 @@ function limpiarFormulario() {
 function abrirDetalle(r) {
   reporteActual=r;
   fotoLevantarB64=null;
-  const strikes = todosStrikes.filter(s=>s.ID_REPORTE===r.ID);
+  const strikes = todosStrikes.filter(s=>(s.ID_REPORTE||s.ID_Reporte||"")===r.ID);
 
   document.getElementById("pantalla-main").style.display    ="none";
   document.getElementById("pantalla-detalle").style.display ="block";
@@ -801,7 +801,7 @@ function abrirDetalle(r) {
   document.getElementById("strike-texto").textContent=`${strikes.length}/20 strikes`;
 
   const btnStrike    = document.getElementById("btn-strike");
-  const yaHizoStrike = strikes.some(s=>dniLimpio(s.DNI)===dniLimpio(usuarioActual.DNI));
+  const yaHizoStrike = strikes.some(s=>dniLimpio(s.DNI||"")===dniLimpio(usuarioActual.DNI));
   const esPropio     = dniLimpio(r.DNI)===dniLimpio(usuarioActual.DNI);
   const diffHoras    = (new Date()-new Date(r.FECHA))/3600000;
   const puedeStrike  = !esPropio&&diffHoras>=0&&!yaHizoStrike&&r.ESTADO!=="LEVANTADO"&&strikes.length<20;
@@ -877,7 +877,7 @@ async function darStrike() {
       method:"POST",redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body:JSON.stringify({accion:"nuevoStrike",id_reporte:reporteActual.ID,
-        dni:dniLimpio(usuarioActual.DNI),nombre:usuarioActual.NOMBRE||""})
+        dni:dniLimpio(usuarioActual.DNI),nombre:usuarioActual.NOMBRE||usuarioActual.Nombre||""})
     });
     setTimeout(async()=>{
       await cargarReportes();
@@ -900,7 +900,7 @@ async function levantarReporte() {
       body: JSON.stringify({
         accion:"levantarReporte",
         id_reporte: reporteActual.ID,
-        nombre: usuarioActual.NOMBRE||"",
+        nombre: usuarioActual.NOMBRE||usuarioActual.Nombre||"",
         foto: fotoLevantarB64 || ""
       })
     });
@@ -919,7 +919,7 @@ async function levantarReporte() {
 async function generarPDF() {
   if (!reporteActual) return;
   const r = reporteActual;
-  const strikes = todosStrikes.filter(s=>s.ID_REPORTE===r.ID).length;
+  const strikes = todosStrikes.filter(s=>(s.ID_REPORTE||s.ID_Reporte||"")===r.ID).length;
 
   /* Cargar fotos desde 3_Fotos */
   let fotoAntes = "", fotoDespues = "";
