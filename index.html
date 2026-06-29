@@ -1019,23 +1019,47 @@ async function generarPDF() {
       </div>
     </div>`;
 
+  /* Limpiar URL para que no aparezca el dni en el PDF */
+  window.history.replaceState({}, "", window.location.pathname);
+
   /* Abrir PDF en ventana nueva limpia — sin URL, sin headers del navegador */
   const ventana = window.open("", "_blank");
   ventana.document.write(`<!DOCTYPE html>
 <html lang="es"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reporte ${r.ID} · Planta Óxidos</title>
+<title>Reporte ${r.ID} · Planta Óxidos · Volcán Compañía Minera S.A.A.</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Arial, sans-serif; background: white; color: #333; }
+  .aviso-impresion {
+    background: #1f3055; color: white; padding: 12px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; position: sticky; top: 0; z-index: 99;
+  }
+  .aviso-impresion p { font-size: 12px; opacity: 0.9; }
+  .aviso-impresion strong { font-size: 13px; }
+  .btn-imprimir {
+    background: #ff7300; color: white; border: none; border-radius: 8px;
+    padding: 10px 20px; font-size: 13px; font-weight: bold; cursor: pointer;
+    white-space: nowrap;
+  }
   @media print {
     @page { margin: 10mm; size: A4; }
-    .no-print { display: none !important; }
+    .aviso-impresion { display: none !important; }
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
-</head><body>${html}</body></html>`);
+</head><body>
+<div class="aviso-impresion">
+  <div>
+    <strong>⚙ Antes de imprimir:</strong>
+    <p>En el diálogo de impresión → "Más configuraciones" → desactiva <strong>"Encabezados y pies de página"</strong></p>
+  </div>
+  <button class="btn-imprimir" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+</div>
+${html}
+</body></html>`);
   ventana.document.close();
   ventana.focus();
 }
@@ -1086,7 +1110,10 @@ async function iniciarConDNI(dni) {
     if (op) {
       esSuper = (op.Area1 || "").trim().toLowerCase() === "supervision";
       usuarioActual = op;
-      guardarSesion(); mostrarMain();
+      guardarSesion();
+      /* Limpiar el ?dni= de la URL inmediatamente */
+      window.history.replaceState({}, "", window.location.pathname);
+      mostrarMain();
       setTimeout(()=>{ cambiarMainTab(1); }, 300);
     } else {
       document.getElementById("pantalla-carga").style.display="none";
