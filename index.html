@@ -621,7 +621,8 @@ function verificarPin() {
 
   const op = colaboradores.find(c => dniLimpio(c.DNI).startsWith(pin) && pin.length===4);
   if (op) {
-    /* Si Area1 es Supervision → acceso de supervisor */
+    console.log("COLABORADOR KEYS:", Object.keys(op));
+    console.log("COLABORADOR:", JSON.stringify(op));
     esSuper = (op.Area1 || "").trim().toLowerCase() === "supervision";
     usuarioActual = op;
     guardarSesion(); mostrarMain(); return;
@@ -709,7 +710,7 @@ async function enviarReporte() {
       body: JSON.stringify({
         accion:"nuevoReporte",
         dni:   dniLimpio(usuarioActual.DNI),
-        nombre: usuarioActual.Nombre||usuarioActual.NOMBRE||"",
+        nombre: usuarioActual.Nombre||usuarioActual.NOMBRE||usuarioActual.nombre||"SIN NOMBRE",
         area, equipo, problema, descripcion,
         foto: fotoReporteB64 || ""
       })
@@ -804,7 +805,7 @@ function abrirDetalle(r) {
   const yaHizoStrike = strikes.some(s=>dniLimpio(s.DNI||"")===dniLimpio(usuarioActual.DNI));
   const esPropio     = dniLimpio(r.DNI)===dniLimpio(usuarioActual.DNI);
   const diffHoras    = (new Date()-new Date(r.FECHA))/3600000;
-  const puedeStrike  = esSuper&&!yaHizoStrike&&r.ESTADO!=="LEVANTADO"&&strikes.length<20;
+  const puedeStrike  = esSuper&&r.ESTADO!=="LEVANTADO"&&strikes.length<20;
   btnStrike.disabled = !puedeStrike;
 
   /* Reset foto levantar */
@@ -877,7 +878,7 @@ async function darStrike() {
       method:"POST",redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body:JSON.stringify({accion:"nuevoStrike",id_reporte:reporteActual.ID,
-        dni:dniLimpio(usuarioActual.DNI),nombre:usuarioActual.Nombre||usuarioActual.NOMBRE||""})
+        dni:dniLimpio(usuarioActual.DNI),nombre:usuarioActual.Nombre||usuarioActual.NOMBRE||usuarioActual.nombre||"SIN NOMBRE"})
     });
     setTimeout(async()=>{
       await cargarReportes();
@@ -900,7 +901,7 @@ async function levantarReporte() {
       body: JSON.stringify({
         accion:"levantarReporte",
         id_reporte: reporteActual.ID,
-        nombre: usuarioActual.Nombre||usuarioActual.NOMBRE||"",
+        nombre: usuarioActual.Nombre||usuarioActual.NOMBRE||usuarioActual.nombre||"SIN NOMBRE",
         foto: fotoLevantarB64 || ""
       })
     });
