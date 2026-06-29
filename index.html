@@ -466,11 +466,9 @@ input[type="file"] { display: none; }
 </div>
 
 <script>
-const SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbz38ZNFIhYWd4w8QkvEdsxIQcIrT2vmJvOWVwyN3-1oyID0FJjSa7nTSYPoMnFEIGmYvQ/exec";
-const FOTO_URL    = "/api/foto";  // proxy Vercel — sin CORS
-const SHEETS_ID   = "1FoN-S-KOjs1vRuekQktGnX17_2pduM9ZjhDG3g8t5ZM";
-const PIN_SUPER   = "2002";
-const PIN_MAESTRO = "0000";
+const SCRIPT_URL       = "https://script.google.com/macros/s/AKfycbz38ZNFIhYWd4w8QkvEdsxIQcIrT2vmJvOWVwyN3-1oyID0FJjSa7nTSYPoMnFEIGmYvQ/exec";
+const PERFIL_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJ8mc3CmydYBrvfsH_TFxD7w8QBl80VUk1kEp0tzd_E7OYMfXeEPkKm21P8t2UreE/exec";
+const FOTO_URL         = "/api/foto";
 
 let usuarioActual = null;
 let esSuper       = false;
@@ -565,9 +563,9 @@ function cerrarVisorFoto() {
 /* ══ CARGA INICIAL ══ */
 async function cargarDatos() {
   try {
-    const res  = await fetch(`https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:csv&sheet=1_Colaboradores`);
-    const text = await res.text();
-    colaboradores = parseCSV(text);
+    const res  = await fetch(PERFIL_SCRIPT_URL + "?accion=getColaboradores");
+    colaboradores = await res.json();
+    if (!Array.isArray(colaboradores)) colaboradores = [];
     if (recuperarSesion()) { mostrarMain(); return; }
     document.getElementById("pantalla-carga").style.display = "none";
     document.getElementById("pantalla-pin").style.display   = "flex";
@@ -1093,9 +1091,9 @@ function cerrarSesion() {
 /* ══ AUTO-LOGIN desde Perfil 360 vía ?dni= ══ */
 async function iniciarConDNI(dni) {
   try {
-    const res  = await fetch(`https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:csv&sheet=1_Colaboradores`);
-    const text = await res.text();
-    colaboradores = parseCSV(text);
+    const res  = await fetch(PERFIL_SCRIPT_URL + "?accion=getColaboradores");
+    colaboradores = await res.json();
+    if (!Array.isArray(colaboradores)) colaboradores = [];
 
     /* Si ya hay sesión activa del mismo DNI, no reiniciar */
     const sesionExistente = sessionStorage.getItem("r360_usuario");
