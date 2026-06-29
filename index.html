@@ -950,58 +950,83 @@ async function generarPDF() {
     </div>` : "";
 
   const html = `
-    <div style="font-family:Arial,sans-serif;color:#333;max-width:680px;margin:0 auto;">
-      <div style="background:#1f3055;color:white;padding:20px 24px;border-radius:10px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
+    <style>
+      @media print {
+        @page { margin: 0; size: A4; }
+        body { margin: 0; }
+        .no-print { display: none !important; }
+        .pdf-wrap { padding: 16px !important; }
+      }
+    </style>
+    <div class="pdf-wrap" style="font-family:Arial,sans-serif;color:#333;width:100%;padding:8px;box-sizing:border-box;">
+      
+      <!-- HEADER -->
+      <div style="background:#1f3055;color:white;padding:14px 18px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:18px;font-weight:bold;">Reporte 360° · Planta Óxidos</div>
-          <div style="font-size:12px;opacity:0.8;margin-top:4px;">Volcán Compañía Minera S.A.A. · ${r.ID}</div>
+          <div style="font-size:16px;font-weight:bold;">Reporte 360° · Planta Óxidos</div>
+          <div style="font-size:11px;opacity:0.8;margin-top:2px;">Volcán Compañía Minera S.A.A. · ${r.ID}</div>
         </div>
-        <span style="padding:6px 14px;border-radius:20px;font-weight:bold;font-size:12px;
+        <span style="padding:5px 12px;border-radius:20px;font-weight:bold;font-size:11px;
           ${r.ESTADO==='LEVANTADO'?'background:#E2EFDA;color:#375623':'background:#FFF2CC;color:#7F5B00'}">${r.ESTADO||'PENDIENTE'}</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-        <div style="border:1px solid #ddd;border-radius:8px;padding:12px;">
-          <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px;">Área</div>
-          <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.AREA||'—'}</div>
+
+      <!-- GRID DATOS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div style="border:1px solid #ddd;border-radius:6px;padding:8px;">
+          <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Área</div>
+          <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.AREA||'—'}</div>
         </div>
-        <div style="border:1px solid #ddd;border-radius:8px;padding:12px;">
-          <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px;">Fecha</div>
-          <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.FECHA||'—'}</div>
+        <div style="border:1px solid #ddd;border-radius:6px;padding:8px;">
+          <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Fecha</div>
+          <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.FECHA||'—'}</div>
         </div>
-        <div style="border:1px solid #ddd;border-radius:8px;padding:12px;">
-          <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px;">Equipo</div>
-          <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.EQUIPO||'—'}</div>
+        <div style="border:1px solid #ddd;border-radius:6px;padding:8px;">
+          <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Equipo</div>
+          <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.EQUIPO||'—'}</div>
         </div>
-        <div style="border:1px solid #ddd;border-radius:8px;padding:12px;">
-          <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px;">Tipo de problema</div>
-          <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.PROBLEMA||'—'}</div>
+        <div style="border:1px solid #ddd;border-radius:6px;padding:8px;">
+          <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Tipo de problema</div>
+          <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.PROBLEMA||'—'}</div>
         </div>
       </div>
-      <div style="border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:12px;">
-        <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:6px;">Descripción</div>
-        <div style="font-size:13px;line-height:1.6;">${r.DESCRIPCION||'—'}</div>
+
+      <!-- DESCRIPCION -->
+      <div style="border:1px solid #ddd;border-radius:6px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:4px;">Descripción</div>
+        <div style="font-size:12px;line-height:1.5;">${r.DESCRIPCION||'—'}</div>
       </div>
-      <div style="border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:12px;">
-        <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px;">Reportado por</div>
-        <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.NOMBRE||'—'} · DNI: ${r.DNI||'—'}</div>
+
+      <!-- REPORTADO POR -->
+      <div style="border:1px solid #ddd;border-radius:6px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Reportado por</div>
+        <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.NOMBRE||'—'} · DNI: ${r.DNI||'—'}</div>
       </div>
+
+      <!-- FOTOS -->
       ${fotosHTML}
-      <div style="background:#fff8f0;border:1px solid #ff7300;border-radius:8px;padding:14px;margin-bottom:12px;">
-        <div style="font-size:10px;color:#cc5e00;text-transform:uppercase;font-weight:bold;margin-bottom:6px;">⚠ Strikes acumulados</div>
-        <div style="font-size:22px;font-weight:bold;color:#C00000;">${strikes} / 20</div>
+
+      <!-- STRIKES -->
+      <div style="background:#fff8f0;border:1px solid #ff7300;border-radius:6px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:9px;color:#cc5e00;text-transform:uppercase;font-weight:bold;margin-bottom:4px;">⚠ Strikes acumulados</div>
+        <div style="font-size:20px;font-weight:bold;color:#C00000;">${strikes} / 20</div>
       </div>
+
+      <!-- LEVANTADO POR -->
       ${r.ESTADO==="LEVANTADO"?`
-      <div style="border:1px solid #4CAF50;border-radius:8px;padding:14px;margin-bottom:12px;">
-        <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px;">Levantado por</div>
-        <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.LEVANTADO_POR||'—'} · ${r.FECHA_LEVANTADO||'—'}</div>
+      <div style="border:1px solid #4CAF50;border-radius:6px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Levantado por</div>
+        <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.LEVANTADO_POR||'—'} · ${r.FECHA_LEVANTADO||'—'}</div>
       </div>`:""}
-      <div style="text-align:center;font-size:11px;color:#aaa;margin-top:24px;padding-top:14px;border-top:1px solid #eee;">
-        Generado por Reporte 360° · Planta Óxidos · Volcán Compañía Minera S.A.A.<br>
-        ${new Date().toLocaleString("es-PE")}
+
+      <!-- FOOTER -->
+      <div style="border-top:1px solid #eee;padding-top:8px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:10px;color:#aaa;">
+          Generado por Reporte 360° · Planta Óxidos · Volcán Compañía Minera S.A.A.<br>
+          ${new Date().toLocaleString("es-PE")}
+        </div>
+        <button class="no-print" onclick="window.print()" style="background:#1f3055;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:bold;cursor:pointer;">🖨 Imprimir / Guardar PDF</button>
       </div>
-      <div style="margin-top:20px;text-align:center;">
-        <button onclick="window.print()" style="background:#1f3055;color:white;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:bold;cursor:pointer;">🖨 Imprimir / Guardar PDF</button>
-      </div>
+
     </div>`;
 
   document.getElementById("pdf-frame").innerHTML = html;
