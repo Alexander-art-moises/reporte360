@@ -1016,7 +1016,15 @@ function cambiarMainTab(idx) {
   document.querySelectorAll(".main-tab").forEach((t,i)        =>t.classList.toggle("activa",i===idx));
   document.querySelectorAll(".main-tab-content").forEach((c,i)=>c.classList.toggle("activa",i===idx));
 }
-function cerrarSesion() { limpiarSesion(); location.reload(); }
+function cerrarSesion() {
+  limpiarSesion();
+  /* Si la pestaña fue abierta desde Perfil 360, cerrarla */
+  if (window.opener || document.referrer.includes("colaboradores-oxidos")) {
+    window.close();
+  } else {
+    location.reload();
+  }
+}
 
 /* ══ AUTO-LOGIN desde Perfil 360 vía ?dni= ══ */
 async function iniciarConDNI(dni) {
