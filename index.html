@@ -581,8 +581,8 @@ function mostrarMain() {
   document.getElementById("pantalla-main").style.display    = "block";
   document.getElementById("pantalla-detalle").style.display = "none";
   document.getElementById("main-user").textContent =
-    (usuarioActual.NOMBRE || usuarioActual.Nombre || "") + " · " +
-    (usuarioActual.CARGO  || usuarioActual.Cargo  || "OPERADOR");
+    (usuarioActual.Nombre || usuarioActual.NOMBRE || "") + " · " +
+    (usuarioActual.Cargo  || usuarioActual.CARGO  || "OPERADOR");
   cargarReportes();
 }
 
@@ -615,7 +615,7 @@ function verificarPin() {
 
   if (pin === PIN_MAESTRO || pin === PIN_SUPER) {
     esSuper = true;
-    usuarioActual = { DNI:"0000", NOMBRE: pin===PIN_MAESTRO?"ADMINISTRADOR":"SUPERVISOR", CARGO:"SUPERVISIÓN" };
+    usuarioActual = { DNI:"0000", Nombre: pin===PIN_MAESTRO?"ADMINISTRADOR":"SUPERVISOR", Cargo:"SUPERVISIÓN" };
     guardarSesion(); mostrarMain(); return;
   }
 
@@ -709,7 +709,7 @@ async function enviarReporte() {
       body: JSON.stringify({
         accion:"nuevoReporte",
         dni:   dniLimpio(usuarioActual.DNI),
-        nombre: usuarioActual.NOMBRE||usuarioActual.Nombre||"",
+        nombre: usuarioActual.Nombre||usuarioActual.NOMBRE||"",
         area, equipo, problema, descripcion,
         foto: fotoReporteB64 || ""
       })
@@ -804,7 +804,7 @@ function abrirDetalle(r) {
   const yaHizoStrike = strikes.some(s=>dniLimpio(s.DNI||"")===dniLimpio(usuarioActual.DNI));
   const esPropio     = dniLimpio(r.DNI)===dniLimpio(usuarioActual.DNI);
   const diffHoras    = (new Date()-new Date(r.FECHA))/3600000;
-  const puedeStrike  = !esPropio&&diffHoras>=0&&!yaHizoStrike&&r.ESTADO!=="LEVANTADO"&&strikes.length<20;
+  const puedeStrike  = esSuper&&!yaHizoStrike&&r.ESTADO!=="LEVANTADO"&&strikes.length<20;
   btnStrike.disabled = !puedeStrike;
 
   /* Reset foto levantar */
@@ -877,7 +877,7 @@ async function darStrike() {
       method:"POST",redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body:JSON.stringify({accion:"nuevoStrike",id_reporte:reporteActual.ID,
-        dni:dniLimpio(usuarioActual.DNI),nombre:usuarioActual.NOMBRE||usuarioActual.Nombre||""})
+        dni:dniLimpio(usuarioActual.DNI),nombre:usuarioActual.Nombre||usuarioActual.NOMBRE||""})
     });
     setTimeout(async()=>{
       await cargarReportes();
@@ -900,7 +900,7 @@ async function levantarReporte() {
       body: JSON.stringify({
         accion:"levantarReporte",
         id_reporte: reporteActual.ID,
-        nombre: usuarioActual.NOMBRE||usuarioActual.Nombre||"",
+        nombre: usuarioActual.Nombre||usuarioActual.NOMBRE||"",
         foto: fotoLevantarB64 || ""
       })
     });
