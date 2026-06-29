@@ -621,8 +621,6 @@ function verificarPin() {
 
   const op = colaboradores.find(c => dniLimpio(c.DNI).startsWith(pin) && pin.length===4);
   if (op) {
-    console.log("COLABORADOR KEYS:", Object.keys(op));
-    console.log("COLABORADOR:", JSON.stringify(op));
     esSuper = (op.Area1 || "").trim().toLowerCase() === "supervision";
     usuarioActual = op;
     guardarSesion(); mostrarMain(); return;
