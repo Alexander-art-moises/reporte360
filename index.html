@@ -955,7 +955,7 @@ async function generarPDF() {
       <div style="background:#1f3055;color:white;padding:18px 24px;border-radius:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
           <div style="font-size:18px;font-weight:bold;">Reporte 360° · Planta Óxidos</div>
-          <div style="font-size:11px;opacity:0.8;margin-top:3px;">Volcán Compañía Minera S.A.A. · ${r.ID}</div>
+          <div style="font-size:11px;opacity:0.8;margin-top:3px;">VOLCAN Compañía Minera S.A.A. · ${r.ID}</div>
         </div>
         <span style="padding:6px 14px;border-radius:20px;font-weight:bold;font-size:12px;
           ${r.ESTADO==='LEVANTADO'?'background:#E2EFDA;color:#375623':'background:#FFF2CC;color:#7F5B00'}">${r.ESTADO||'PENDIENTE'}</span>
@@ -1012,7 +1012,7 @@ async function generarPDF() {
       <!-- FOOTER -->
       <div style="border-top:1px solid #eee;padding-top:10px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
         <div style="font-size:10px;color:#aaa;">
-          Generado por Reporte 360° · Planta Óxidos · Volcán Compañía Minera S.A.A. · ${new Date().toLocaleString("es-PE")}
+          Generado por Reporte 360° · Planta Óxidos · VOLCAN Compañía Minera S.A.A. · ${new Date().toLocaleString("es-PE")}
         </div>
         <button onclick="window.print()" style="background:#1f3055;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:bold;cursor:pointer;-webkit-print-color-adjust:exact;">🖨 Imprimir / Guardar PDF</button>
       </div>
@@ -1027,7 +1027,7 @@ async function generarPDF() {
 <html lang="es"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reporte ${r.ID} · Planta Óxidos · Volcán Compañía Minera S.A.A.</title>
+<title>Reporte ${r.ID} · Planta Óxidos · VOLCAN Compañía Minera S.A.A.</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Arial, sans-serif; background: white; color: #333; }
