@@ -538,13 +538,13 @@ function comprimirFoto(file, callback) {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      const MAX = 600;  // máx 600px
+      const MAX = 800;
       let w = img.width, h = img.height;
       if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
       if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
       canvas.width = w; canvas.height = h;
       canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-      callback(canvas.toDataURL("image/jpeg", 0.5)); // 50% calidad
+      callback(canvas.toDataURL("image/jpeg", 0.70));
     };
     img.src = e.target.result;
   };
@@ -694,44 +694,30 @@ async function enviarReporte() {
   msg.style.display="none";
 
   try {
-    /* Generar ID en frontend — no dependemos de la respuesta del Apps Script */
-    const idGenerado = "R-" + Date.now();
-
-    /* PASO 1: datos con el ID ya generado */
-    fetch(SCRIPT_URL, {
+    /* Enviar datos + foto base64 en un solo POST directo a Apps Script */
+    const res = await fetch(SCRIPT_URL, {
       method:"POST", redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({
         accion:"nuevoReporte",
-        id: idGenerado,
         dni:   dniLimpio(usuarioActual.DNI),
         nombre: usuarioActual.NOMBRE||usuarioActual.Nombre||"",
-        area, equipo, problema, descripcion
+        area, equipo, problema, descripcion,
+        foto: fotoReporteB64 || ""
       })
-    }).catch(()=>{});
+    });
 
-    /* PASO 2: foto via proxy — independiente del paso 1 */
-    if (fotoReporteB64) {
-      fetch(FOTO_URL, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          accion:"subirFotoReporte",
-          id_reporte: idGenerado,
-          foto: fotoReporteB64
-        })
-      }).catch(()=>{});
-    }
+    let data;
+    try { data = JSON.parse(await res.text()); } catch(e){ data={ok:true}; }
 
     msg.textContent="✅ Reporte enviado correctamente.";
     msg.className="form-msg ok"; msg.style.display="block";
     limpiarFormulario();
     mostrarToast("✅ Guardado en Sheets","ok");
-    /* Esperamos 5s para que ambos requests lleguen antes de recargar */
     setTimeout(async()=>{
       await cargarReportes();
       cambiarMainTab(0);
-    }, 5000);
+    }, 2000);
 
   } catch(e) {
     msg.textContent="⚠ Verificando envío...";
@@ -783,38 +769,10 @@ function abrirDetalle(r) {
   badge.textContent = r.ESTADO||"PENDIENTE";
   badge.className   = "badge-estado badge-"+(r.ESTADO||"PENDIENTE");
 
+  /* Cargar fotos desde 3_Fotos */
   const fotosEl = document.getElementById("fotos-section");
-  fotosEl.innerHTML="";
-  const hayAntes   = r.FOTO_PROBLEMA   && r.FOTO_PROBLEMA.trim();
-  const hayDespues = r.FOTO_LEVANTADO  && r.FOTO_LEVANTADO.trim();
-  if (hayAntes || hayDespues) {
-    if (hayAntes) {
-      fotosEl.innerHTML += `
-        <div class="foto-card">
-          <div class="foto-card-label antes">📷 Antes</div>
-          <img src="${r.FOTO_PROBLEMA}" alt="Foto problema" referrerpolicy="no-referrer"
-               onclick="verFotoAmpliada('${r.FOTO_PROBLEMA}')"
-               onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div class="foto-card-vacia" style="display:none;">No se pudo cargar la foto</div>
-        </div>`;
-    }
-    if (hayDespues) {
-      fotosEl.innerHTML += `
-        <div class="foto-card">
-          <div class="foto-card-label despues">✅ Después</div>
-          <img src="${r.FOTO_LEVANTADO}" alt="Foto solución" referrerpolicy="no-referrer"
-               onclick="verFotoAmpliada('${r.FOTO_LEVANTADO}')"
-               onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div class="foto-card-vacia" style="display:none;">No se pudo cargar la foto</div>
-        </div>`;
-    } else if (hayAntes) {
-      fotosEl.innerHTML += `
-        <div class="foto-card">
-          <div class="foto-card-label despues">✅ Después</div>
-          <div class="foto-card-vacia">Sin foto<br>de solución</div>
-        </div>`;
-    }
-  }
+  fotosEl.innerHTML = '<div style="color:#aaa;font-size:11px;padding:8px;">Cargando fotos...</div>';
+  cargarFotosReporte(r.ID, fotosEl);
 
   /* Levantado info */
   const divLev = document.getElementById("div-levantado-info");
@@ -859,6 +817,48 @@ function volverALista() {
   window.scrollTo(0,0);
 }
 
+/* ══ CARGAR FOTOS DESDE 3_Fotos ══ */
+async function cargarFotosReporte(id, contenedor) {
+  try {
+    const res   = await fetch(SCRIPT_URL + "?accion=getFotos&id=" + encodeURIComponent(id));
+    const fotos = await res.json();
+    contenedor.innerHTML = "";
+
+    const hayAntes   = fotos.problema  && fotos.problema.trim();
+    const hayDespues = fotos.levantado && fotos.levantado.trim();
+
+    if (!hayAntes && !hayDespues) return;
+
+    if (hayAntes) {
+      const div = document.createElement("div");
+      div.className = "foto-card";
+      div.innerHTML = `
+        <div class="foto-card-label antes">📷 Antes</div>
+        <img src="${fotos.problema}" alt="Foto problema"
+             onclick="verFotoAmpliada('${fotos.problema}')">`;
+      contenedor.appendChild(div);
+    }
+    if (hayDespues) {
+      const div = document.createElement("div");
+      div.className = "foto-card";
+      div.innerHTML = `
+        <div class="foto-card-label despues">✅ Después</div>
+        <img src="${fotos.levantado}" alt="Foto solución"
+             onclick="verFotoAmpliada('${fotos.levantado}')">`;
+      contenedor.appendChild(div);
+    } else if (hayAntes) {
+      const div = document.createElement("div");
+      div.className = "foto-card";
+      div.innerHTML = `
+        <div class="foto-card-label despues">✅ Después</div>
+        <div class="foto-card-vacia">Sin foto<br>de solución</div>`;
+      contenedor.appendChild(div);
+    }
+  } catch(e) {
+    contenedor.innerHTML = "";
+  }
+}
+
 /* ══ STRIKES ══ */
 async function darStrike() {
   if (!reporteActual) return;
@@ -885,50 +885,45 @@ async function levantarReporte() {
   if (!reporteActual||!esSuper) return;
   if (!confirm("¿Confirmas que este problema fue resuelto?")) return;
 
-  const idReporte = reporteActual.ID;
-
   try {
-    /* Paso 1: levantar sin foto */
     await fetch(SCRIPT_URL,{
       method:"POST", redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({
         accion:"levantarReporte",
-        id_reporte: idReporte,
-        nombre: usuarioActual.NOMBRE||""
+        id_reporte: reporteActual.ID,
+        nombre: usuarioActual.NOMBRE||"",
+        foto: fotoLevantarB64 || ""
       })
     });
 
-    /* Paso 2: foto opcional con no-cors */
-    if (fotoLevantarB64) {
-      fetch(FOTO_URL,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          accion:"subirFotoLevantado",
-          id_reporte: idReporte,
-          foto: fotoLevantarB64
-        })
-      }).catch(()=>{});
-    }
-
     setTimeout(async()=>{
       await cargarReportes();
-      const r=todosReportes.find(x=>x.ID===idReporte);
+      const r=todosReportes.find(x=>x.ID===reporteActual.ID);
       if(r) abrirDetalle(r);
       mostrarToast("✅ Reporte levantado","ok");
-    }, fotoLevantarB64 ? 4000 : 1500);
+    }, 1500);
 
   } catch(e) { mostrarToast("Error al levantar","err"); }
 }
 
 /* ══ PDF ══ */
-function generarPDF() {
+async function generarPDF() {
   if (!reporteActual) return;
   const r = reporteActual;
   const strikes = todosStrikes.filter(s=>s.ID_REPORTE===r.ID).length;
-  const hayAntes   = r.FOTO_PROBLEMA  && r.FOTO_PROBLEMA.trim();
-  const hayDespues = r.FOTO_LEVANTADO && r.FOTO_LEVANTADO.trim();
+
+  /* Cargar fotos desde 3_Fotos */
+  let fotoAntes = "", fotoDespues = "";
+  try {
+    const res   = await fetch(SCRIPT_URL + "?accion=getFotos&id=" + encodeURIComponent(r.ID));
+    const fotos = await res.json();
+    fotoAntes   = fotos.problema  || "";
+    fotoDespues = fotos.levantado || "";
+  } catch(e) {}
+
+  const hayAntes   = fotoAntes.trim();
+  const hayDespues = fotoDespues.trim();
 
   const fotosHTML = (hayAntes||hayDespues) ? `
     <div style="margin-bottom:14px;">
@@ -937,12 +932,12 @@ function generarPDF() {
         ${hayAntes?`
         <div>
           <div style="font-size:10px;font-weight:bold;background:#FFF2CC;color:#7F5B00;padding:4px 8px;border-radius:4px 4px 0 0;">📷 ANTES — Problema</div>
-          <img src="${r.FOTO_PROBLEMA}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #ddd;border-top:none;border-radius:0 0 4px 4px;">
+          <img src="${fotoAntes}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #ddd;border-top:none;border-radius:0 0 4px 4px;">
         </div>`:""}
         ${hayDespues?`
         <div>
           <div style="font-size:10px;font-weight:bold;background:#E2EFDA;color:#375623;padding:4px 8px;border-radius:4px 4px 0 0;">✅ DESPUÉS — Solución</div>
-          <img src="${r.FOTO_LEVANTADO}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #ddd;border-top:none;border-radius:0 0 4px 4px;">
+          <img src="${fotoDespues}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #ddd;border-top:none;border-radius:0 0 4px 4px;">
         </div>`:""}
       </div>
     </div>` : "";
