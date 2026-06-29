@@ -950,90 +950,94 @@ async function generarPDF() {
     </div>` : "";
 
   const html = `
-    <style>
-      @media print {
-        @page { margin: 0; size: A4; }
-        body { margin: 0; }
-        .no-print { display: none !important; }
-        .pdf-wrap { padding: 16px !important; }
-      }
-    </style>
-    <div class="pdf-wrap" style="font-family:Arial,sans-serif;color:#333;width:100%;padding:8px;box-sizing:border-box;">
-      
+    <div style="font-family:Arial,sans-serif;color:#333;padding:20px;max-width:800px;margin:0 auto;">
+
       <!-- HEADER -->
-      <div style="background:#1f3055;color:white;padding:14px 18px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="background:#1f3055;color:white;padding:18px 24px;border-radius:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:16px;font-weight:bold;">Reporte 360° · Planta Óxidos</div>
-          <div style="font-size:11px;opacity:0.8;margin-top:2px;">Volcán Compañía Minera S.A.A. · ${r.ID}</div>
+          <div style="font-size:18px;font-weight:bold;">Reporte 360° · Planta Óxidos</div>
+          <div style="font-size:11px;opacity:0.8;margin-top:3px;">Volcán Compañía Minera S.A.A. · ${r.ID}</div>
         </div>
-        <span style="padding:5px 12px;border-radius:20px;font-weight:bold;font-size:11px;
+        <span style="padding:6px 14px;border-radius:20px;font-weight:bold;font-size:12px;
           ${r.ESTADO==='LEVANTADO'?'background:#E2EFDA;color:#375623':'background:#FFF2CC;color:#7F5B00'}">${r.ESTADO||'PENDIENTE'}</span>
       </div>
 
       <!-- GRID DATOS -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-        <div style="border:1px solid #ddd;border-radius:6px;padding:8px;">
-          <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Área</div>
-          <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.AREA||'—'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="border:1px solid #ddd;border-radius:8px;padding:12px;">
+          <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:3px;">Área</div>
+          <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.AREA||'—'}</div>
         </div>
-        <div style="border:1px solid #ddd;border-radius:6px;padding:8px;">
-          <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Fecha</div>
-          <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.FECHA||'—'}</div>
+        <div style="border:1px solid #ddd;border-radius:8px;padding:12px;">
+          <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:3px;">Fecha</div>
+          <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.FECHA||'—'}</div>
         </div>
-        <div style="border:1px solid #ddd;border-radius:6px;padding:8px;">
-          <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Equipo</div>
-          <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.EQUIPO||'—'}</div>
+        <div style="border:1px solid #ddd;border-radius:8px;padding:12px;">
+          <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:3px;">Equipo</div>
+          <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.EQUIPO||'—'}</div>
         </div>
-        <div style="border:1px solid #ddd;border-radius:6px;padding:8px;">
-          <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Tipo de problema</div>
-          <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.PROBLEMA||'—'}</div>
+        <div style="border:1px solid #ddd;border-radius:8px;padding:12px;">
+          <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:3px;">Tipo de problema</div>
+          <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.PROBLEMA||'—'}</div>
         </div>
       </div>
 
       <!-- DESCRIPCION -->
-      <div style="border:1px solid #ddd;border-radius:6px;padding:10px;margin-bottom:8px;">
-        <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:4px;">Descripción</div>
-        <div style="font-size:12px;line-height:1.5;">${r.DESCRIPCION||'—'}</div>
+      <div style="border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:10px;">
+        <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:5px;">Descripción</div>
+        <div style="font-size:13px;line-height:1.6;">${r.DESCRIPCION||'—'}</div>
       </div>
 
       <!-- REPORTADO POR -->
-      <div style="border:1px solid #ddd;border-radius:6px;padding:10px;margin-bottom:8px;">
-        <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Reportado por</div>
-        <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.NOMBRE||'—'} · DNI: ${r.DNI||'—'}</div>
+      <div style="border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:10px;">
+        <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:3px;">Reportado por</div>
+        <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.NOMBRE||'—'} · DNI: ${r.DNI||'—'}</div>
       </div>
 
       <!-- FOTOS -->
       ${fotosHTML}
 
       <!-- STRIKES -->
-      <div style="background:#fff8f0;border:1px solid #ff7300;border-radius:6px;padding:10px;margin-bottom:8px;">
-        <div style="font-size:9px;color:#cc5e00;text-transform:uppercase;font-weight:bold;margin-bottom:4px;">⚠ Strikes acumulados</div>
-        <div style="font-size:20px;font-weight:bold;color:#C00000;">${strikes} / 20</div>
+      <div style="background:#fff8f0;border:1px solid #ff7300;border-radius:8px;padding:14px;margin-bottom:10px;">
+        <div style="font-size:10px;color:#cc5e00;text-transform:uppercase;font-weight:bold;margin-bottom:5px;">⚠ Strikes acumulados</div>
+        <div style="font-size:22px;font-weight:bold;color:#C00000;">${strikes} / 20</div>
       </div>
 
       <!-- LEVANTADO POR -->
       ${r.ESTADO==="LEVANTADO"?`
-      <div style="border:1px solid #4CAF50;border-radius:6px;padding:10px;margin-bottom:8px;">
-        <div style="font-size:9px;color:#888;text-transform:uppercase;margin-bottom:2px;">Levantado por</div>
-        <div style="font-size:13px;font-weight:bold;color:#1f3055;">${r.LEVANTADO_POR||'—'} · ${r.FECHA_LEVANTADO||'—'}</div>
+      <div style="border:1px solid #4CAF50;border-radius:8px;padding:14px;margin-bottom:10px;">
+        <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:3px;">Levantado por</div>
+        <div style="font-size:14px;font-weight:bold;color:#1f3055;">${r.LEVANTADO_POR||'—'} · ${r.FECHA_LEVANTADO||'—'}</div>
       </div>`:""}
 
       <!-- FOOTER -->
-      <div style="border-top:1px solid #eee;padding-top:8px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="border-top:1px solid #eee;padding-top:10px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
         <div style="font-size:10px;color:#aaa;">
-          Generado por Reporte 360° · Planta Óxidos · Volcán Compañía Minera S.A.A.<br>
-          ${new Date().toLocaleString("es-PE")}
+          Generado por Reporte 360° · Planta Óxidos · Volcán Compañía Minera S.A.A. · ${new Date().toLocaleString("es-PE")}
         </div>
-        <button class="no-print" onclick="window.print()" style="background:#1f3055;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:bold;cursor:pointer;">🖨 Imprimir / Guardar PDF</button>
+        <button onclick="window.print()" style="background:#1f3055;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:bold;cursor:pointer;-webkit-print-color-adjust:exact;">🖨 Imprimir / Guardar PDF</button>
       </div>
-
     </div>`;
 
-  document.getElementById("pdf-frame").innerHTML = html;
-  /* Ocultar pantalla detalle para que el PDF salga limpio */
-  document.getElementById("pantalla-detalle").style.display = "none";
-  document.getElementById("pdf-overlay").classList.add("visible");
-  document.body.style.overflow = "hidden";
+  /* Abrir PDF en ventana nueva limpia — sin URL, sin headers del navegador */
+  const ventana = window.open("", "_blank");
+  ventana.document.write(`<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte ${r.ID} · Planta Óxidos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: white; color: #333; }
+  @media print {
+    @page { margin: 10mm; size: A4; }
+    .no-print { display: none !important; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head><body>${html}</body></html>`);
+  ventana.document.close();
+  ventana.focus();
 }
 
 function cerrarPDF() {
