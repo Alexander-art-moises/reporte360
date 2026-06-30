@@ -608,27 +608,30 @@ function parseLine(line) {
 const dniLimpio = (d) => String(parseInt(d||"0"));
 
 /* ══ PIN ══ */
-function verificarPin() {
+async function verificarPin() {
   const pin = document.getElementById("input-pin").value.trim();
   document.getElementById("pin-error").style.display = "none";
 
-  if (pin === PIN_MAESTRO || pin === PIN_SUPER) {
-    esSuper = true;
-    usuarioActual = { DNI:"0000", Nombre: pin===PIN_MAESTRO?"ADMINISTRADOR":"SUPERVISOR", Cargo:"SUPERVISIÓN" };
-    guardarSesion(); mostrarMain(); return;
-  }
+  try {
+    const res  = await fetch(PERFIL_SCRIPT_URL + "?accion=verificarPin&pin=" + encodeURIComponent(pin));
+    const data = await res.json();
 
-  const op = colaboradores.find(c => dniLimpio(c.DNI).startsWith(pin) && pin.length===4);
-  if (op) {
-    esSuper = (op.Area1 || "").trim().toLowerCase() === "supervision";
-    usuarioActual = op;
-    guardarSesion(); mostrarMain(); return;
-  }
+    if (!data.ok) {
+      const e = document.getElementById("pin-error");
+      e.textContent = "PIN incorrecto. Intenta nuevamente.";
+      e.style.display = "block";
+      document.getElementById("input-pin").value = "";
+      return;
+    }
 
-  const e = document.getElementById("pin-error");
-  e.textContent = "PIN incorrecto. Intenta nuevamente.";
-  e.style.display = "block";
-  document.getElementById("input-pin").value = "";
+    esSuper = data.esSuper;
+    usuarioActual = data.usuario;
+    guardarSesion(); mostrarMain();
+  } catch(e) {
+    const err = document.getElementById("pin-error");
+    err.textContent = "Error de conexión. Intenta nuevamente.";
+    err.style.display = "block";
+  }
 }
 
 /* ══ CARGAR REPORTES ══ */
